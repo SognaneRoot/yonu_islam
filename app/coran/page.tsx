@@ -3,19 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { BookCard } from "@/components/book-card";
 import { useAppData } from "@/lib/store";
 import { todayISO } from "@/lib/utils";
-import { BookOpen, Star, Upload } from "lucide-react";
+import { BookOpen, Star } from "lucide-react";
 import { useState } from "react";
 
 const TOTAL_PAGES = 604;
 
 export default function CoranPage() {
-  const { data, update, addXp, logStudyMinutes } = useAppData();
+  const { data, update, addXp } = useAppData();
   const [pagesToday, setPagesToday] = useState(1);
   const pagesRead = data.notes["coran-pages-read"] ? parseInt(data.notes["coran-pages-read"]) : 0;
-  const dailyGoal = 4;
   const todayLog = data.studyMinutesLog[todayISO()] || 0;
+  const quranBook = data.library.find((b) => b.category === "Coran");
 
   function addPages(n: number) {
     update((prev) => ({
@@ -84,14 +85,17 @@ export default function CoranPage() {
       <Card>
         <CardHeader>
           <CardTitle>Reprendre la lecture / Tafsir</CardTitle>
-          <CardDescription>Importe ton Mus'haf ou un tafsir en PDF pour lire directement dans l'app</CardDescription>
+          <CardDescription>Ton Mus'haf et ton tafsir, lisibles directement, sans téléchargement</CardDescription>
         </CardHeader>
         <CardContent>
-          <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 p-8 text-center transition-colors hover:border-gold-500/40">
-            <Upload size={22} className="text-gold-400" />
-            <span className="text-sm text-beige-100">Importer un PDF (Mus'haf, tafsir...)</span>
-            <input type="file" accept="application/pdf" className="hidden" onChange={() => logStudyMinutes(0)} />
-          </label>
+          {quranBook ? (
+            <BookCard book={quranBook} />
+          ) : (
+            <p className="text-sm text-sand-400">
+              Dépose <code className="text-gold-400">coran-tafsir.pdf</code> dans{" "}
+              <code className="text-gold-400">public/assets/books/</code> pour l'ouvrir ici.
+            </p>
+          )}
         </CardContent>
       </Card>
 

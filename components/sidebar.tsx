@@ -17,7 +17,6 @@ import {
   ShieldHalf,
   Library,
   Moon,
-  UserCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -38,7 +37,6 @@ const NAV = [
   { href: "/habitudes", label: "Habitudes", icon: ListChecks },
   { href: "/combat", label: "Mon Combat", icon: ShieldHalf },
   { href: "/bibliotheque", label: "Bibliothèque", icon: Library },
-  { href: "/compte", label: "Mon compte", icon: UserCircle },
 ];
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {

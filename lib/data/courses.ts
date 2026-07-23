@@ -19,6 +19,7 @@ export type CourseCategory = {
   color: "emerald" | "gold" | "night";
   sections: CourseSection[];
   quiz: QuizQuestion[];
+  libraryCategory?: string; // matches LibraryItem.category, links this module to its books
 };
 
 export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
@@ -130,6 +131,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     tagline: "Les Trois Fondements · Les Quatre Règles · Kitab At-Tawhid",
     icon: "book-marked",
     color: "gold",
+    libraryCategory: "Aqida",
     sections: [
       {
         id: "trois-fondements",
@@ -196,6 +198,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     tagline: "Les 40 Hadiths d'An-Nawawi · Riyad As-Salihin · Bulugh Al-Maram",
     icon: "scroll-text",
     color: "night",
+    libraryCategory: "Hadith",
     sections: [
       { id: "nawawi", title: "Les 40 Hadiths d'An-Nawawi", content: ["Une sélection concise de hadiths englobant les fondements de la religion, souvent recommandée comme premier recueil à mémoriser."] },
       { id: "riyad", title: "Riyad As-Salihin", content: ["Un vaste recueil organisé par thèmes de vertus et de bonnes mœurs, tiré des paroles et actes du Prophète ﷺ."] },
@@ -216,6 +219,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     tagline: "Purification, prière, jeûne, zakat, mariage, commerce, voyage, funérailles",
     icon: "scale",
     color: "gold",
+    libraryCategory: "Fiqh",
     sections: [
       { id: "purification", title: "Purification", content: ["Les règles de la pureté rituelle conditionnent la validité de nombreux actes d'adoration."] },
       { id: "priere", title: "Prière", content: ["Structure, conditions et cas particuliers (voyage, maladie, prière du vendredi)."] },

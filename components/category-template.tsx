@@ -5,40 +5,35 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { BookCard } from "@/components/book-card";
 import { CourseCategory } from "@/lib/data/courses";
 import { Step } from "@/lib/data/steps";
 import { StepsGrid } from "@/components/steps-grid";
 import { useAppData } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, Circle, FileUp, Heart, Star, Upload } from "lucide-react";
+import { CheckCircle2, Circle, Heart, Star } from "lucide-react";
 import { useState } from "react";
 
 export function CategoryTemplate({ category, steps }: { category: CourseCategory; steps?: Step[] }) {
-  const { data, toggleFavorite, setNote, setQuizScore, addXp } = useAppData();
+  const { data, toggleFavorite, setNote, setQuizScore } = useAppData();
   const [openSection, setOpenSection] = useState<string | null>(category.sections[0]?.id ?? null);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [importedPdfs, setImportedPdfs] = useState<string[]>([]);
 
   const noteKey = `${category.slug}-notes`;
   const isFavorite = data.favorites.includes(category.slug);
   const bestScore = data.quizScores[category.slug] || 0;
   const sectionsRead = category.sections.filter((s) => data.favorites.includes(`${category.slug}-${s.id}-read`));
   const courseProgress = Math.round((sectionsRead.length / category.sections.length) * 100);
+  const relatedBooks = category.libraryCategory
+    ? data.library.filter((b) => b.category === category.libraryCategory)
+    : [];
 
   function submitQuiz() {
     const correct = category.quiz.filter((q) => quizAnswers[q.id] === q.answerIndex).length;
     const score = Math.round((correct / category.quiz.length) * 100);
     setQuizScore(category.slug, score);
     setQuizSubmitted(true);
-  }
-
-  function handleFileImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || []);
-    if (files.length) {
-      setImportedPdfs((prev) => [...prev, ...files.map((f) => f.name)]);
-      addXp(5);
-    }
   }
 
   return (
@@ -120,33 +115,22 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
         </TabsContent>
 
         <TabsContent value="pdf" className="mt-5 space-y-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Documents importés</CardTitle>
-              <CardDescription>Importe tes propres PDF pour ce module — lecture, surlignage et reprise automatique</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 p-8 text-center transition-colors hover:border-gold-500/40">
-                <Upload size={22} className="text-gold-400" />
-                <span className="text-sm text-beige-100">Glisse un PDF ou clique pour importer</span>
-                <span className="text-xs text-sand-400">PDF uniquement</span>
-                <input type="file" accept="application/pdf" multiple className="hidden" onChange={handleFileImport} />
-              </label>
-              {importedPdfs.length > 0 && (
-                <ul className="space-y-2">
-                  {importedPdfs.map((name, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center gap-2.5 rounded-xl border border-white/8 bg-night-700/50 px-3.5 py-2.5 text-sm"
-                    >
-                      <FileUp size={16} className="text-gold-400" />
-                      <span className="truncate">{name}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
+          {relatedBooks.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {relatedBooks.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-sm text-sand-400">
+                Aucun PDF associé à ce module pour l'instant. Dépose-en un dans{" "}
+                <code className="text-gold-400">public/assets/books/</code> et ajoute-le dans{" "}
+                <code className="text-gold-400">lib/data/library.ts</code> avec{" "}
+                <code className="text-gold-400">category: &quot;{category.libraryCategory || category.title}&quot;</code>.
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="quiz" className="mt-5 space-y-4">
