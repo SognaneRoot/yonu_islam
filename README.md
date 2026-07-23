@@ -25,6 +25,65 @@ Stack : **Next.js 14 (App Router) + TypeScript + Tailwind CSS**, avec une intég
 Toutes les données sont sauvegardées automatiquement dans le navigateur (`localStorage`), donc
 **l'application fonctionne immédiatement, sans aucune configuration.**
 
+## Images et PDF — dossier `public/assets/`
+
+Pas besoin de base de données pour les images des étapes du wudu/de la prière ni pour les livres :
+il suffit de déposer les fichiers au bon endroit avec le bon nom, et l'app les affiche
+automatiquement.
+
+```
+public/assets/wuduh/w1.png   ...   w8.png    → étapes du wudu (grille "Étapes" de /ablutions)
+public/assets/priere/p1.png  ...   p10.png   → étapes de la prière (grille "Étapes" de /priere)
+public/assets/books/*.pdf                    → livres lisibles depuis /bibliotheque
+```
+
+Tant qu'une image n'existe pas encore, la grille affiche un cadre "image à ajouter" avec le
+chemin exact attendu — donc rien ne casse visuellement en attendant.
+
+### Noms des étapes du wudu (`public/assets/wuduh/`)
+| Fichier | Étape |
+|---|---|
+| `w1.png` | Intention et Bismillah |
+| `w2.png` | Laver les mains |
+| `w3.png` | Rincer la bouche et le nez |
+| `w4.png` | Laver le visage |
+| `w5.png` | Laver les avant-bras |
+| `w6.png` | Essuyer la tête et les oreilles |
+| `w7.png` | Laver les pieds |
+| `w8.png` | Invocation finale |
+
+### Noms des étapes de la prière (`public/assets/priere/`)
+| Fichier | Étape |
+|---|---|
+| `p1.png` | Intention (niyyah) |
+| `p2.png` | Takbir d'ouverture |
+| `p3.png` | Position debout (qiyam) |
+| `p4.png` | Inclinaison (ruku') |
+| `p5.png` | Redressement (i'tidal) |
+| `p6.png` | Première prosternation |
+| `p7.png` | Position assise entre les deux prosternations |
+| `p8.png` | Deuxième prosternation |
+| `p9.png` | Tashahhud |
+| `p10.png` | Salut final (taslim) |
+
+Les titres/descriptions sont déjà écrits dans `lib/data/steps.ts` — tu n'as qu'à fournir les
+images avec ces noms exacts (format carré recommandé, ex. 800×800px, `.png` ou `.jpg`).
+
+### Noms des livres (`public/assets/books/`)
+| Fichier attendu | Livre | Catégorie |
+|---|---|---|
+| `trois-fondements.pdf` | Les Trois Fondements | Aqida |
+| `quatre-regles.pdf` | Les Quatre Règles | Aqida |
+| `kitab-at-tawhid.pdf` | Kitab At-Tawhid | Aqida |
+| `quarante-hadith-nawawi.pdf` | Les 40 Hadiths d'An-Nawawi | Hadith |
+| `riyad-as-salihin.pdf` | Riyad As-Salihin | Hadith |
+| `bulugh-al-maram.pdf` | Bulugh Al-Maram | Hadith |
+| `fiqh-sunnah-priere.pdf` | Fiqh As-Sunnah — La prière | Fiqh |
+
+Cette liste est définie dans `lib/data/library.ts` (champ `file`). Une fois un PDF déposé dans
+`public/assets/books/` avec le bon nom, le bouton **Lire** dans `/bibliotheque` l'ouvre directement
+dans un lecteur intégré à la page.
+
 ## Ce qui reste à brancher pour une version 100% production
 
 Certaines fonctionnalités du cahier des charges initial demandent des services externes que je
@@ -61,7 +120,11 @@ Ouvre [http://localhost:3000](http://localhost:3000).
    **Project Settings > Environment Variables** (voir section suivante).
 5. Clique sur **Deploy**.
 
-## Activer la sauvegarde cloud (Supabase) — optionnel
+## Activer la sauvegarde cloud (Supabase) — totalement optionnel, non nécessaire
+
+Cette section ne sert que si tu veux plus tard une synchronisation entre plusieurs appareils.
+**Tu peux l'ignorer** : l'app fonctionne très bien sans, avec le stockage local + les assets statiques.
+
 
 1. Crée un projet gratuit sur [supabase.com](https://supabase.com).
 2. Dans l'éditeur SQL du projet, colle et exécute le contenu de `supabase/schema.sql`.

@@ -4,13 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useAppData } from "@/lib/store";
-import { Heart, Search, Upload } from "lucide-react";
+import { BookOpen, Heart, Search, Upload, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export default function BibliothequePage() {
   const { data, update, toggleFavorite, addXp } = useAppData();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<string>("Tous");
+  const [reading, setReading] = useState<string | null>(null);
 
   const categories = useMemo(
     () => ["Tous", ...Array.from(new Set(data.library.map((b) => b.category)))],
@@ -102,20 +103,49 @@ export default function BibliothequePage() {
               <Progress value={book.progress} />
               <div className="flex items-center justify-between text-xs text-sand-400">
                 <span>{book.progress}% lu</span>
-                <button
-                  className="text-gold-400 hover:underline"
-                  onClick={() =>
-                    update((prev) => ({
-                      ...prev,
-                      library: prev.library.map((b) =>
-                        b.id === book.id ? { ...b, progress: Math.min(100, b.progress + 10) } : b
-                      ),
-                    }))
-                  }
-                >
-                  Continuer la lecture
-                </button>
+                <div className="flex items-center gap-3">
+                  {book.file && (
+                    <button
+                      className="flex items-center gap-1 text-gold-400 hover:underline"
+                      onClick={() => setReading(reading === book.id ? null : book.id)}
+                    >
+                      <BookOpen size={13} /> {reading === book.id ? "Fermer" : "Lire"}
+                    </button>
+                  )}
+                  <button
+                    className="text-gold-400 hover:underline"
+                    onClick={() =>
+                      update((prev) => ({
+                        ...prev,
+                        library: prev.library.map((b) =>
+                          b.id === book.id ? { ...b, progress: Math.min(100, b.progress + 10) } : b
+                        ),
+                      }))
+                    }
+                  >
+                    Continuer la lecture
+                  </button>
+                </div>
               </div>
+              {book.file && reading === book.id && (
+                <div className="relative overflow-hidden rounded-xl border border-white/10">
+                  <button
+                    onClick={() => setReading(null)}
+                    className="absolute right-2 top-2 z-10 rounded-full bg-night-800/80 p-1 text-beige-100 hover:bg-night-800"
+                    aria-label="Fermer le lecteur"
+                  >
+                    <X size={14} />
+                  </button>
+                  <iframe
+                    src={`/assets/books/${book.file}`}
+                    className="h-[70vh] w-full bg-white"
+                    title={book.title}
+                  />
+                  <p className="border-t border-white/10 bg-night-700/60 px-3 py-2 text-[11px] text-sand-400">
+                    Fichier attendu : <code className="text-gold-400">public/assets/books/{book.file}</code>
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

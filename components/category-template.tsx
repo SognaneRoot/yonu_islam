@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CourseCategory } from "@/lib/data/courses";
+import { Step } from "@/lib/data/steps";
+import { StepsGrid } from "@/components/steps-grid";
 import { useAppData } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Circle, FileUp, Heart, Star, Upload } from "lucide-react";
 import { useState } from "react";
 
-export function CategoryTemplate({ category }: { category: CourseCategory }) {
+export function CategoryTemplate({ category, steps }: { category: CourseCategory; steps?: Step[] }) {
   const { data, toggleFavorite, setNote, setQuizScore, addXp } = useAppData();
   const [openSection, setOpenSection] = useState<string | null>(category.sections[0]?.id ?? null);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
@@ -60,13 +62,20 @@ export function CategoryTemplate({ category }: { category: CourseCategory }) {
         </div>
       </div>
 
-      <Tabs defaultValue="cours">
+      <Tabs defaultValue={steps ? "etapes" : "cours"}>
         <TabsList>
+          {steps && <TabsTrigger value="etapes">Étapes</TabsTrigger>}
           <TabsTrigger value="cours">Cours</TabsTrigger>
           <TabsTrigger value="pdf">PDF</TabsTrigger>
           <TabsTrigger value="quiz">Quiz</TabsTrigger>
           <TabsTrigger value="notes">Mes notes</TabsTrigger>
         </TabsList>
+
+        {steps && (
+          <TabsContent value="etapes" className="mt-5">
+            <StepsGrid steps={steps} prefix={category.slug} />
+          </TabsContent>
+        )}
 
         <TabsContent value="cours" className="mt-5 space-y-3">
           {category.sections.map((section) => {
