@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, Amiri } from "next/font/google";
 import "./globals.css";
 import { AppDataProvider } from "@/lib/store";
-import { AppShell } from "@/components/app-shell";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -32,9 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`dark ${fraunces.variable} ${inter.variable} ${amiri.variable}`}>
       <body className="font-body">
-        <AppDataProvider>
-          <AppShell>{children}</AppShell>
-        </AppDataProvider>
+        <AppDataProvider>{children}</AppDataProvider>
       </body>
     </html>
   );

@@ -26,8 +26,8 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
   const sectionsRead = category.sections.filter((s) => data.favorites.includes(`${category.slug}-${s.id}-read`));
   const courseProgress = Math.round((sectionsRead.length / category.sections.length) * 100);
   const relatedBooks = category.libraryCategory
-  ? data.library.filter((b) => normalizeKey(b.category) === normalizeKey(category.libraryCategory!))
-  : [];
+    ? data.library.filter((b) => normalizeKey(b.category) === normalizeKey(category.libraryCategory!))
+    : [];
 
   function submitQuiz() {
     const correct = category.quiz.filter((q) => quizAnswers[q.id] === q.answerIndex).length;

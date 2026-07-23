@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { BookCard } from "@/components/book-card";
 import { useAppData } from "@/lib/store";
-import { todayISO } from "@/lib/utils";
+import { todayISO, normalizeKey } from "@/lib/utils";
 import { BookOpen, Star } from "lucide-react";
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ export default function CoranPage() {
   const [pagesToday, setPagesToday] = useState(1);
   const pagesRead = data.notes["coran-pages-read"] ? parseInt(data.notes["coran-pages-read"]) : 0;
   const todayLog = data.studyMinutesLog[todayISO()] || 0;
-  const quranBook = data.library.find((b) => b.category === "Coran");
+  const quranBook = data.library.find((b) => normalizeKey(b.category) === "coran");
 
   function addPages(n: number) {
     update((prev) => ({

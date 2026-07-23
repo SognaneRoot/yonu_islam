@@ -1,32 +1,33 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-export function PdfModal({
+export function PdfPageViewer({
   file,
   title,
   page,
   totalPages,
   onPageChange,
-  onClose,
+  backHref = "/bibliotheque",
 }: {
   file: string;
   title: string;
   page: number;
   totalPages?: number;
   onPageChange: (page: number) => void;
-  onClose: () => void;
+  backHref?: string;
 }) {
   const [numPages, setNumPages] = useState<number | null>(totalPages || null);
   const [width, setWidth] = useState(360);
 
   useEffect(() => {
     function update() {
-      setWidth(Math.min(window.innerWidth - 32, 760));
+      setWidth(Math.min(window.innerWidth - 32, 820));
     }
     update();
     window.addEventListener("resize", update);
@@ -35,7 +36,6 @@ export function PdfModal({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
       if (e.key === "ArrowRight") goNext();
       if (e.key === "ArrowLeft") goPrev();
     }
@@ -51,20 +51,34 @@ export function PdfModal({
     onPageChange(Math.min(numPages || page + 1, page + 1));
   }
 
+  function handleClose() {
+    // Ne fonctionne que si l'onglet a été ouvert par script (window.open) —
+    // c'est le cas ici puisque le bouton "Lire" utilise window.open().
+    window.close();
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/92 backdrop-blur-sm">
+    <div className="flex h-screen flex-col bg-night-800">
       <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-night-800 px-4 py-3">
-        <p className="min-w-0 truncate font-display text-sm text-beige-50">{title}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <Link
+            href={backHref}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-sand-300 hover:bg-white/10 hover:text-beige-100"
+          >
+            <ArrowLeft size={16} /> Retour
+          </Link>
+          <p className="min-w-0 truncate font-display text-sm text-beige-50">{title}</p>
+        </div>
         <div className="flex shrink-0 items-center gap-3">
           <span className="text-xs tabular-nums text-sand-300">
             {page} / {numPages ?? totalPages ?? "?"}
           </span>
           <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-beige-100 hover:bg-white/10"
-            aria-label="Fermer le lecteur"
+            onClick={handleClose}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-beige-100 hover:bg-white/10"
+            aria-label="Fermer l'onglet"
           >
-            <X size={18} />
+            <X size={16} /> Fermer
           </button>
         </div>
       </div>
@@ -95,24 +109,24 @@ export function PdfModal({
             className="shadow-2xl"
           />
         </Document>
-      </div>
 
-      <button
-        onClick={goPrev}
-        disabled={page <= 1}
-        aria-label="Page précédente"
-        className="fixed left-3 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-night-700/90 text-beige-100 shadow-soft transition-opacity hover:bg-night-600 disabled:opacity-0 sm:left-5"
-      >
-        <ChevronLeft size={22} />
-      </button>
-      <button
-        onClick={goNext}
-        disabled={!!numPages && page >= numPages}
-        aria-label="Page suivante"
-        className="fixed right-3 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-night-700/90 text-beige-100 shadow-soft transition-opacity hover:bg-night-600 disabled:opacity-0 sm:right-5"
-      >
-        <ChevronRight size={22} />
-      </button>
+        <button
+          onClick={goPrev}
+          disabled={page <= 1}
+          aria-label="Page précédente"
+          className="fixed left-3 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-night-700/90 text-beige-100 shadow-soft transition-opacity hover:bg-night-600 disabled:opacity-0 sm:left-5"
+        >
+          <ChevronLeft size={22} />
+        </button>
+        <button
+          onClick={goNext}
+          disabled={!!numPages && page >= numPages}
+          aria-label="Page suivante"
+          className="fixed right-3 top-1/2 z-50 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-night-700/90 text-beige-100 shadow-soft transition-opacity hover:bg-night-600 disabled:opacity-0 sm:right-5"
+        >
+          <ChevronRight size={22} />
+        </button>
+      </div>
     </div>
   );
 }
