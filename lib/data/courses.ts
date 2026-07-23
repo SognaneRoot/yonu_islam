@@ -29,6 +29,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     tagline: "Conditions, piliers, obligations et sunnan de la salat",
     icon: "hand-heart",
     color: "emerald",
+    libraryCategory: "Prière",
     sections: [
       {
         id: "conditions",
@@ -93,6 +94,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     tagline: "Obligations, sunnan et annulatifs",
     icon: "droplets",
     color: "night",
+    libraryCategory: "Ablutions",
     sections: [
       {
         id: "obligations",

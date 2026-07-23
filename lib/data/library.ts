@@ -15,6 +15,7 @@ export const DEFAULT_LIBRARY: LibraryItem[] = [
   { id: "lib-4", title: "Les 40 Hadiths d'An-Nawawi", category: "Hadith", pages: 96, progress: 15, favorite: false, file: "quarante-hadith-nawawi.pdf" },
   { id: "lib-5", title: "Riyad As-Salihin", category: "Hadith", pages: 620, progress: 5, favorite: false, file: "riyad-as-salihin.pdf" },
   { id: "lib-6", title: "Bulugh Al-Maram", category: "Hadith", pages: 340, progress: 0, favorite: false, file: "bulugh-al-maram.pdf" },
-  { id: "lib-7", title: "Fiqh As-Sunnah — La prière", category: "Fiqh", pages: 88, progress: 60, favorite: true, file: "fiqh-sunnah-priere.pdf" },
+  { id: "lib-7", title: "Fiqh As-Sunnah — La prière", category: "Prière", pages: 88, progress: 60, favorite: true, file: "fiqh-sunnah-priere.pdf" },
   { id: "lib-8", title: "Le Saint Coran (avec tafsir)", category: "Coran", pages: 604, progress: 0, favorite: true, file: "coran-tafsir.pdf" },
+  { id: "lib-9", title: "Fiqh As-Sunnah — La purification", category: "Ablutions", pages: 60, progress: 0, favorite: false, file: "fiqh-sunnah-purification.pdf" },
 ];
