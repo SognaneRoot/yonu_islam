@@ -172,6 +172,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     tagline: "Sincérité, patience, gratitude, confiance en Allah",
     icon: "sparkles",
     color: "emerald",
+    libraryCategory: "Purification du cœur",
     sections: [
       { id: "sincerite", title: "Sincérité (ikhlas)", content: ["Agir uniquement pour Allah, sans rechercher le regard ou l'éloge des gens, est la condition d'acceptation de toute œuvre."] },
       { id: "patience", title: "Patience (sabr)", content: ["La patience se manifeste dans l'obéissance, face à l'épreuve, et pour se détourner de la désobéissance. Elle est décrite comme une lumière qui guide le croyant."] },
@@ -247,6 +248,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     tagline: "Alphabet, lecture, écriture, vocabulaire, grammaire",
     icon: "languages",
     color: "emerald",
+    libraryCategory: "Arabe",
     sections: [
       { id: "alphabet", title: "Alphabet", content: ["Les 28 lettres de l'alphabet arabe, leurs formes isolée, initiale, médiane et finale."] },
       { id: "lecture", title: "Lecture", content: ["Assemblage des lettres, voyelles courtes (harakat) et longues, règles de base du tajwid."] },
