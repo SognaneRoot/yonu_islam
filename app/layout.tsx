@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, Amiri } from "next/font/google";
 import "./globals.css";
 import { AppDataProvider } from "@/lib/store";
+import { AuthProvider } from "@/lib/auth-context";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -31,7 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`dark ${fraunces.variable} ${inter.variable} ${amiri.variable}`}>
       <body className="font-body">
-        <AppDataProvider>{children}</AppDataProvider>
+        <AuthProvider>
+          <AppDataProvider>{children}</AppDataProvider>
+        </AuthProvider>
       </body>
     </html>
   );

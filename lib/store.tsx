@@ -1,9 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { DEFAULT_HABITS } from "./data/habits";
 import { DEFAULT_LIBRARY, LibraryItem } from "./data/library";
 import { todayISO } from "./utils";
+import { useAuth } from "./auth-context";
+import { getFirebaseDb } from "./firebase/client";
 
 export type JournalEntry = {
   id: string;
@@ -65,15 +68,34 @@ type Ctx = {
 
 const AppDataContext = createContext<Ctx | null>(null);
 
+function mergeLibraryWithDefaults(saved?: LibraryItem[]) {
+  return DEFAULT_LIBRARY.map((defaultItem) => {
+    const match = saved?.find((b) => b.id === defaultItem.id);
+    return match ? { ...defaultItem, progress: match.progress, favorite: match.favorite } : defaultItem;
+  });
+}
+
 export function AppDataProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [data, setData] = useState<AppData>(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
+  const cloudReadyRef = useRef(false);
+  const dataRef = useRef(data);
+  const writeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        setData({ ...DEFAULT_DATA, ...JSON.parse(raw) });
+        const parsed = JSON.parse(raw);
+        // Fusionne la bibliothèque sauvegardée avec celle du code : les livres déjà
+        // connus gardent la progression de l'utilisateur, et tout nouveau livre ajouté
+        // dans lib/data/library.ts apparaît automatiquement, sans avoir à vider le cache.
+        setData({ ...DEFAULT_DATA, ...parsed, library: mergeLibraryWithDefaults(parsed.library) });
       }
     } catch {
       // ignore corrupt storage
@@ -89,6 +111,67 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       // storage full or unavailable — silently ignore
     }
   }, [data, ready]);
+
+  // Synchronisation cloud (Firebase) : au login, on récupère le document de
+  // l'utilisateur (ou on migre les données locales/invité s'il n'en a pas encore).
+  // Au logout, on revient à la version locale.
+  useEffect(() => {
+    const uid = user?.uid;
+    const db = getFirebaseDb();
+
+    if (!uid || !db) {
+      cloudReadyRef.current = false;
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const ref = doc(db, "users", uid);
+        const snap = await getDoc(ref);
+        if (cancelled) return;
+        if (snap.exists()) {
+          const cloud = snap.data() as Partial<AppData>;
+          setData((prev) => ({
+            ...DEFAULT_DATA,
+            ...prev,
+            ...cloud,
+            library: mergeLibraryWithDefaults(cloud.library),
+          }));
+        } else {
+          // Première connexion sur ce compte : on migre la progression locale/invité.
+          await setDoc(ref, dataRef.current);
+        }
+      } catch {
+        // hors-ligne ou règles Firestore restrictives — on continue en local
+      } finally {
+        if (!cancelled) cloudReadyRef.current = true;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
+
+  // Écriture cloud, avec un léger anti-rebond pour éviter d'écrire à chaque frappe
+  useEffect(() => {
+    if (!ready) return;
+    const uid = user?.uid;
+    const db = getFirebaseDb();
+    if (!uid || !db || !cloudReadyRef.current) return;
+
+    if (writeTimer.current) clearTimeout(writeTimer.current);
+    writeTimer.current = setTimeout(() => {
+      setDoc(doc(db, "users", uid), data).catch(() => {
+        // écriture cloud échouée (hors-ligne) — les données restent sûres en local
+      });
+    }, 800);
+
+    return () => {
+      if (writeTimer.current) clearTimeout(writeTimer.current);
+    };
+  }, [data, ready, user?.uid]);
 
   // streak bookkeeping based on any habit interaction today
   useEffect(() => {

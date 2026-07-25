@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Données de progression de l'utilisateur (niveaux, habitudes, journal, bibliothèque...)
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Abonnement : l'utilisateur peut lire le sien, mais ne peut jamais s'auto-activer.
+    // Seules les routes API serveur (via Firebase Admin SDK, qui contourne ces règles
+    // après vérification réelle auprès de PayPal/Stripe) peuvent écrire status = "active".
+    match /subscriptions/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}

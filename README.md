@@ -97,7 +97,77 @@ le numéro de page en cours est retenu automatiquement pour reprendre la lecture
 Pour ajouter un nouveau livre : dépose le PDF dans `public/assets/books/`, puis ajoute une ligne
 dans le tableau `DEFAULT_LIBRARY` de `lib/data/library.ts` avec le même nom de fichier.
 
-## Lancer le projet en local
+## Comptes, sauvegarde cloud et abonnements (Firebase + PayPal + Stripe)
+
+L'app supporte maintenant de vrais comptes utilisateurs, une sauvegarde cloud multi-appareils,
+et des abonnements payants (mensuel/annuel) via **PayPal** et **Stripe** (carte bancaire).
+Tout est optionnel : tant que les variables d'environnement ci-dessous ne sont pas renseignées,
+l'app continue de fonctionner en mode local (comme avant), sans compte ni paiement.
+
+### 1. Créer le projet Firebase (comptes + base de données)
+
+1. Va sur [console.firebase.google.com](https://console.firebase.google.com) → **Ajouter un projet** (gratuit, plan Spark).
+2. Dans le projet : **Authentication** → **Get started** → active la méthode **Email/Password**.
+3. Toujours dans le projet : **Firestore Database** → **Créer une base de données** → mode production.
+4. Dans **Firestore Database > Règles**, colle le contenu du fichier `firestore.rules` (fourni dans ce projet) puis **Publier**. Ces règles empêchent un utilisateur de s'auto-attribuer un abonnement — seul le serveur (après vérification réelle du paiement) peut le faire.
+5. Dans **Paramètres du projet > Général**, ajoute une application Web → copie la config qui apparaît dans les variables ci-dessous.
+6. Toujours dans **Paramètres du projet**, onglet **Comptes de service** → **Générer une nouvelle clé privée** → télécharge le JSON. Le contenu complet de ce fichier (en une seule ligne) va dans `FIREBASE_SERVICE_ACCOUNT_KEY`.
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSyCr-HHaK5oLbwfApcExs_AaZtQtAB3bQlg",
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="yonu-islam.firebaseapp.com",
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="yonu-islam",
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="yonu-islam.firebasestorage.app",
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="716023704857",
+NEXT_PUBLIC_FIREBASE_APP_ID="1:716023704857:web:e9f29fc1707fc2d8aee988",
+measurementId: "G-66QD2ZFG4B"
+FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"...", ...tout le JSON sur une ligne...}
+
+```
+
+### 2. PayPal (abonnements récurrents)
+
+1. Crée une app sur [developer.paypal.com](https://developer.paypal.com/dashboard/applications) (commence en mode **Sandbox** pour tester gratuitement).
+2. Dans **Products > Subscriptions**, crée un produit puis deux **Plans** (mensuel, annuel) avec les prix voulus — note leurs **Plan ID**.
+3. Variables d'environnement :
+```
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=
+NEXT_PUBLIC_PAYPAL_PLAN_MONTHLY=
+NEXT_PUBLIC_PAYPAL_PLAN_ANNUAL=
+PAYPAL_CLIENT_ID=            # même valeur que NEXT_PUBLIC_PAYPAL_CLIENT_ID
+PAYPAL_CLIENT_SECRET=        # dans "API Credentials" de ton app PayPal
+PAYPAL_ENV=sandbox           # ou "live" une fois prêt pour la production
+```
+Le paiement est vérifié côté serveur (`app/api/paypal/confirm`) directement auprès de PayPal avant d'activer l'accès — jamais fait confiance au navigateur.
+
+### 3. Stripe (carte bancaire)
+
+1. Crée un compte sur [dashboard.stripe.com](https://dashboard.stripe.com) (mode Test pour commencer).
+2. **Produits** → crée un produit avec deux **Prix** récurrents (mensuel, annuel) — note leurs **Price ID** (`price_...`).
+3. **Développeurs > Clés API** → récupère la clé secrète.
+4. **Développeurs > Webhooks** → ajoute un endpoint `https://ton-domaine.vercel.app/api/stripe/webhook`, écoute les événements `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted` → note le **secret de signature**.
+```
+STRIPE_SECRET_KEY=
+STRIPE_PRICE_MONTHLY=
+STRIPE_PRICE_ANNUAL=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_SITE_URL=https://ton-domaine.vercel.app
+```
+Pour tester en local avant de déployer : `stripe listen --forward-to localhost:3000/api/stripe/webhook` (CLI Stripe) te donne un secret de test temporaire.
+
+### 4. Ajouter toutes ces variables sur Vercel
+
+**Project Settings > Environment Variables** → colle chaque variable ci-dessus, puis redéploie.
+
+### Comment ça fonctionne
+
+- Les prix affichés dans `lib/subscription.ts` (`PLANS`) sont des **exemples (FCFA)** — ajuste-les pour qu'ils correspondent à ce que tu as configuré dans Stripe/PayPal.
+- Un utilisateur non connecté continue en mode invité local (comme avant).
+- À la première connexion, sa progression locale est automatiquement migrée vers son compte cloud.
+- Le statut d'abonnement (`subscriptions/{uid}` dans Firestore) ne peut être mis à "active" que par les routes serveur (`/api/paypal/confirm`, `/api/stripe/webhook`) après vérification réelle du paiement — jamais directement par le navigateur, même en cas de manipulation.
+- Rien n'est encore "verrouillé" derrière l'abonnement dans le contenu actuel — dis-moi quelles sections doivent devenir premium (ex. Bibliothèque complète, quiz, etc.) et je les câblerai avec `useSubscription()`.
+
+
 
 ```bash
 npm install
