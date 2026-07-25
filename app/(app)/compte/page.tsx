@@ -15,6 +15,7 @@ export default function ComptePage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -73,6 +74,10 @@ export default function ComptePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (mode === "signup" && !acceptedTerms) {
+      setError("Merci d'accepter les conditions d'utilisation pour créer un compte.");
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "signup") {
@@ -129,6 +134,27 @@ export default function ComptePage() {
               className="w-full rounded-xl border border-white/8 bg-night-700/50 px-3.5 py-2.5 text-sm text-beige-100 placeholder:text-sand-500 focus:border-gold-500/40 focus:outline-none"
             />
             {error && <p className="text-xs text-red-300">{error}</p>}
+            {mode === "signup" && (
+              <label className="flex items-start gap-2 text-xs text-sand-400">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 accent-gold-500"
+                />
+                <span>
+                  J'accepte les{" "}
+                  <Link href="/conditions" target="_blank" className="text-gold-400 hover:underline">
+                    Conditions d'utilisation
+                  </Link>{" "}
+                  et la{" "}
+                  <Link href="/confidentialite" target="_blank" className="text-gold-400 hover:underline">
+                    Politique de confidentialité
+                  </Link>
+                  .
+                </span>
+              </label>
+            )}
             <Button type="submit" disabled={busy} className="w-full">
               <Mail size={16} /> {mode === "login" ? "Se connecter" : "Créer mon compte"}
             </Button>

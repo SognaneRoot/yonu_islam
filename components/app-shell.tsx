@@ -4,6 +4,7 @@ import { useAppData } from "@/lib/store";
 import { levelForXp } from "@/lib/data/levels";
 import { Sidebar } from "./sidebar";
 import { Flame, Menu, Sparkles, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+
+        <footer className="mx-auto max-w-6xl px-4 pb-8 pt-2 sm:px-6">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 border-t border-white/8 pt-4 text-xs text-sand-500">
+            <Link href="/confidentialite" className="hover:text-sand-300 hover:underline">
+              Politique de confidentialité
+            </Link>
+            <Link href="/conditions" className="hover:text-sand-300 hover:underline">
+              Conditions d'utilisation
+            </Link>
+          </div>
+        </footer>
       </div>
     </div>
   );
