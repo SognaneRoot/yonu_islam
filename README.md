@@ -114,15 +114,13 @@ l'app continue de fonctionner en mode local (comme avant), sans compte ni paieme
 6. Toujours dans **Paramètres du projet**, onglet **Comptes de service** → **Générer une nouvelle clé privée** → télécharge le JSON. Le contenu complet de ce fichier (en une seule ligne) va dans `FIREBASE_SERVICE_ACCOUNT_KEY`.
 
 ```
-NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSyCr-HHaK5oLbwfApcExs_AaZtQtAB3bQlg",
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="yonu-islam.firebaseapp.com",
-NEXT_PUBLIC_FIREBASE_PROJECT_ID="yonu-islam",
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="yonu-islam.firebasestorage.app",
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="716023704857",
-NEXT_PUBLIC_FIREBASE_APP_ID="1:716023704857:web:e9f29fc1707fc2d8aee988",
-measurementId: "G-66QD2ZFG4B"
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
 FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"...", ...tout le JSON sur une ligne...}
-
 ```
 
 ### 2. PayPal (abonnements récurrents)
@@ -155,6 +153,20 @@ NEXT_PUBLIC_SITE_URL=https://ton-domaine.vercel.app
 ```
 Pour tester en local avant de déployer : `stripe listen --forward-to localhost:3000/api/stripe/webhook` (CLI Stripe) te donne un secret de test temporaire.
 
+### Verrouillage premium
+
+Le contenu suivant est réservé aux abonnés : **lecture des PDF** (Bibliothèque et modules liés)
+et **les quiz**. Tout le reste reste gratuit : tableau de bord, étapes de la prière/wudu, adhkar,
+suivi d'habitudes, "Mon Combat", Sira, cours (texte), Coran (suivi de lecture).
+
+⚠️ **Tant que PayPal/Stripe ne sont pas configurés, personne ne peut devenir premium.** Pour éviter
+de bloquer tout le monde avant que le paiement soit prêt, le verrouillage est **désactivé par
+défaut**. Ajoute cette variable pour l'activer une fois les paiements en place :
+```
+NEXT_PUBLIC_PREMIUM_ENFORCEMENT=true
+```
+Sans cette variable (ou avec toute autre valeur), tout reste accessible à tous, comme aujourd'hui.
+
 ### 4. Ajouter toutes ces variables sur Vercel
 
 **Project Settings > Environment Variables** → colle chaque variable ci-dessus, puis redéploie.
@@ -165,9 +177,9 @@ Pour tester en local avant de déployer : `stripe listen --forward-to localhost:
 - Un utilisateur non connecté continue en mode invité local (comme avant).
 - À la première connexion, sa progression locale est automatiquement migrée vers son compte cloud.
 - Le statut d'abonnement (`subscriptions/{uid}` dans Firestore) ne peut être mis à "active" que par les routes serveur (`/api/paypal/confirm`, `/api/stripe/webhook`) après vérification réelle du paiement — jamais directement par le navigateur, même en cas de manipulation.
-- Rien n'est encore "verrouillé" derrière l'abonnement dans le contenu actuel — dis-moi quelles sections doivent devenir premium (ex. Bibliothèque complète, quiz, etc.) et je les câblerai avec `useSubscription()`.
+- Le verrouillage premium actuel couvre la lecture des PDF et les quiz (voir ci-dessus) — dis-moi si tu veux étendre ou réduire ce périmètre.
 
-
+## Lancer le projet en local
 
 ```bash
 npm install

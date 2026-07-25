@@ -3,6 +3,7 @@
 import { Card, CardContent } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { PdfReader } from "./pdf-reader";
+import { PremiumGate } from "./premium-gate";
 import { useAppData } from "@/lib/store";
 import { Heart } from "lucide-react";
 import { LibraryItem } from "@/lib/data/library";
@@ -34,7 +35,9 @@ export function BookCard({ book }: { book: LibraryItem }) {
           <span>{book.progress}% lu</span>
         </div>
         {book.file ? (
-          <PdfReader bookId={book.id} page={page} />
+          <PremiumGate compact>
+            <PdfReader bookId={book.id} page={page} />
+          </PremiumGate>
         ) : (
           <p className="text-xs text-sand-500">
             Aucun PDF trouvé — dépose-le dans <code className="text-gold-400">public/assets/books/</code>.

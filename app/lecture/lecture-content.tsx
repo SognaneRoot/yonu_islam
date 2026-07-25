@@ -3,19 +3,41 @@
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useAppData } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
+import { useSubscription } from "@/lib/subscription";
 import Link from "next/link";
+import { Lock, Sparkles } from "lucide-react";
 
 const PdfPageViewer = dynamic(
   () => import("@/components/pdf-page-viewer").then((m) => m.PdfPageViewer),
   { ssr: false }
 );
 
+const ENFORCED = process.env.NEXT_PUBLIC_PREMIUM_ENFORCEMENT === "true";
+
 export function LectureContent() {
   const params = useSearchParams();
   const bookId = params.get("book");
   const { data, update, ready } = useAppData();
+  const { firebaseReady } = useAuth();
+  const { hasPremium, loading: subLoading } = useSubscription();
 
-  if (!ready) return null;
+  if (!ready || (ENFORCED && firebaseReady && subLoading)) return null;
+
+  if (ENFORCED && firebaseReady && !hasPremium) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-night-800 px-6 text-center">
+        <Lock size={22} className="text-gold-400" />
+        <p className="text-beige-100">Ce livre est réservé aux abonnés.</p>
+        <Link
+          href="/abonnement"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-gold-500 px-4 py-2 text-sm font-medium text-night-800 hover:bg-gold-400"
+        >
+          <Sparkles size={14} /> Voir les abonnements
+        </Link>
+      </div>
+    );
+  }
 
   const book = data.library.find((b) => b.id === bookId);
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { BookCard } from "@/components/book-card";
+import { PremiumGate } from "@/components/premium-gate";
 import { CourseCategory } from "@/lib/data/courses";
 import { Step } from "@/lib/data/steps";
 import { StepsGrid } from "@/components/steps-grid";
@@ -134,6 +135,7 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
         </TabsContent>
 
         <TabsContent value="quiz" className="mt-5 space-y-4">
+          <PremiumGate label="Les quiz sont réservés aux abonnés">
           {bestScore > 0 && (
             <Badge variant="gold">Meilleur score : {bestScore}%</Badge>
           )}
@@ -177,6 +179,7 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
               <span className="text-sm text-beige-100">Quiz terminé — score enregistré.</span>
             </div>
           )}
+          </PremiumGate>
         </TabsContent>
 
         <TabsContent value="notes" className="mt-5">
