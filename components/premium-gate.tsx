@@ -50,3 +50,26 @@ export function PremiumGate({
     </div>
   );
 }
+
+/** Comme PremiumGate, mais seulement appliqué si `active` est vrai — utile pour la
+ * rotation quotidienne des quiz gratuits (le verrou ne s'applique pas les jours où
+ * le sujet est dans la sélection gratuite). */
+export function ConditionalGate({
+  active,
+  children,
+  label,
+  compact,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+  label?: string;
+  compact?: boolean;
+}) {
+  if (!active) return <>{children}</>;
+  return (
+    <PremiumGate label={label} compact={compact}>
+      {children}
+    </PremiumGate>
+  );
+}
+

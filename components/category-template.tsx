@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { BookCard } from "@/components/book-card";
-import { PremiumGate } from "@/components/premium-gate";
+import { ConditionalGate } from "@/components/premium-gate";
+import { isQuizFreeToday } from "@/lib/daily-quiz";
 import { CourseCategory } from "@/lib/data/courses";
 import { Step } from "@/lib/data/steps";
 import { StepsGrid } from "@/components/steps-grid";
@@ -24,6 +25,7 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
   const noteKey = `${category.slug}-notes`;
   const isFavorite = data.favorites.includes(category.slug);
   const bestScore = data.quizScores[category.slug] || 0;
+  const quizFreeToday = isQuizFreeToday(category.slug);
   const sectionsRead = category.sections.filter((s) => data.favorites.includes(`${category.slug}-${s.id}-read`));
   const courseProgress = Math.round((sectionsRead.length / category.sections.length) * 100);
   const relatedBooks = category.libraryCategory
@@ -135,52 +137,61 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
         </TabsContent>
 
         <TabsContent value="quiz" className="mt-5 space-y-4">
-          <PremiumGate label="Les quiz sont réservés aux abonnés">
-          {bestScore > 0 && (
-            <Badge variant="gold">Meilleur score : {bestScore}%</Badge>
+          {!quizFreeToday && (
+            <Badge variant="outline">
+              Gratuit aujourd'hui : sujets tirés au sort — reviens demain ou abonne-toi
+            </Badge>
           )}
-          {category.quiz.map((q) => (
-            <Card key={q.id}>
-              <CardContent className="space-y-3 p-4">
-                <p className="font-display text-base text-beige-50">{q.question}</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {q.options.map((opt, i) => {
-                    const selected = quizAnswers[q.id] === i;
-                    const showResult = quizSubmitted;
-                    const isCorrect = i === q.answerIndex;
-                    return (
-                      <button
-                        key={i}
-                        disabled={quizSubmitted}
-                        onClick={() => setQuizAnswers((prev) => ({ ...prev, [q.id]: i }))}
-                        className={cn(
-                          "rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors",
-                          selected && !showResult && "border-gold-500/50 bg-gold-500/10",
-                          !selected && !showResult && "border-white/8 hover:border-white/20",
-                          showResult && isCorrect && "border-emerald-500/60 bg-emerald-500/10",
-                          showResult && selected && !isCorrect && "border-red-500/50 bg-red-500/10"
-                        )}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          {!quizSubmitted ? (
-            <Button onClick={submitQuiz} disabled={Object.keys(quizAnswers).length < category.quiz.length}>
-              Valider le quiz
-            </Button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Star size={16} className="text-gold-400" />
-              <span className="text-sm text-beige-100">Quiz terminé — score enregistré.</span>
-            </div>
-          )}
-          </PremiumGate>
+          <ConditionalGate
+            active={!quizFreeToday}
+            label="Ce quiz n'est pas dans la sélection gratuite d'aujourd'hui — les sujets gratuits changent chaque jour."
+          >
+            {quizFreeToday && bestScore > 0 && (
+              <Badge variant="gold">Meilleur score : {bestScore}%</Badge>
+            )}
+            {category.quiz.map((q) => (
+              <Card key={q.id}>
+                <CardContent className="space-y-3 p-4">
+                  <p className="font-display text-base text-beige-50">{q.question}</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {q.options.map((opt, i) => {
+                      const selected = quizAnswers[q.id] === i;
+                      const showResult = quizSubmitted;
+                      const isCorrect = i === q.answerIndex;
+                      return (
+                        <button
+                          key={i}
+                          disabled={quizSubmitted}
+                          onClick={() => setQuizAnswers((prev) => ({ ...prev, [q.id]: i }))}
+                          className={cn(
+                            "rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors",
+                            selected && !showResult && "border-gold-500/50 bg-gold-500/10",
+                            !selected && !showResult && "border-white/8 hover:border-white/20",
+                            showResult && isCorrect && "border-emerald-500/60 bg-emerald-500/10",
+                            showResult && selected && !isCorrect && "border-red-500/50 bg-red-500/10"
+                          )}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {!quizSubmitted ? (
+              <Button onClick={submitQuiz} disabled={Object.keys(quizAnswers).length < category.quiz.length}>
+                Valider le quiz
+              </Button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Star size={16} className="text-gold-400" />
+                <span className="text-sm text-beige-100">Quiz terminé — score enregistré.</span>
+              </div>
+            )}
+          </ConditionalGate>
         </TabsContent>
+
 
         <TabsContent value="notes" className="mt-5">
           <Card>

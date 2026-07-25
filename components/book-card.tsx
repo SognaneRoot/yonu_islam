@@ -5,6 +5,7 @@ import { Progress } from "./ui/progress";
 import { PdfReader } from "./pdf-reader";
 import { PremiumGate } from "./premium-gate";
 import { useAppData } from "@/lib/store";
+import { isBookCategoryAlwaysFree } from "@/lib/daily-quiz";
 import { Heart } from "lucide-react";
 import { LibraryItem } from "@/lib/data/library";
 
@@ -14,6 +15,7 @@ export function BookCard({ book }: { book: LibraryItem }) {
   const pageKey = `page:${book.id}`;
   const storedPage = data.notes[pageKey] ? parseInt(data.notes[pageKey], 10) : null;
   const page = storedPage || Math.max(1, Math.round((book.progress / 100) * (book.pages || 1)) || 1);
+  const alwaysFree = isBookCategoryAlwaysFree(book.category);
 
   return (
     <Card>
@@ -35,9 +37,13 @@ export function BookCard({ book }: { book: LibraryItem }) {
           <span>{book.progress}% lu</span>
         </div>
         {book.file ? (
-          <PremiumGate compact>
+          alwaysFree ? (
             <PdfReader bookId={book.id} page={page} />
-          </PremiumGate>
+          ) : (
+            <PremiumGate compact>
+              <PdfReader bookId={book.id} page={page} />
+            </PremiumGate>
+          )
         ) : (
           <p className="text-xs text-sand-500">
             Aucun PDF trouvé — dépose-le dans <code className="text-gold-400">public/assets/books/</code>.

@@ -155,9 +155,18 @@ Pour tester en local avant de déployer : `stripe listen --forward-to localhost:
 
 ### Verrouillage premium
 
-Le contenu suivant est réservé aux abonnés : **lecture des PDF** (Bibliothèque et modules liés)
-et **les quiz**. Tout le reste reste gratuit : tableau de bord, étapes de la prière/wudu, adhkar,
-suivi d'habitudes, "Mon Combat", Sira, cours (texte), Coran (suivi de lecture).
+**Toujours gratuits** : PDF et quiz de Prière et Ablutions (bases du culte, jamais verrouillées),
+tableau de bord, étapes de la prière/wudu, adhkar, suivi d'habitudes, "Mon Combat", Sira, texte
+des cours, suivi de lecture du Coran.
+
+**Rotation quotidienne des quiz** (Aqida, Purification, Hadith, Fiqh, Arabe) : chaque jour, 3
+sujets sont tirés au sort et deviennent gratuits pour tout le monde (même sélection pour tous,
+change automatiquement le lendemain — voir `lib/daily-quiz.ts`). Les 2 sujets restants ce jour-là
+sont réservés aux abonnés. Modifie `count` dans `getFreeQuizSlugsToday()` si tu préfères 2 plutôt
+que 3.
+
+**Réservé aux abonnés (hors rotation du jour)** : lecture des PDF des autres catégories (Aqida,
+Hadith, Fiqh, Coran).
 
 ⚠️ **Tant que PayPal/Stripe ne sont pas configurés, personne ne peut devenir premium.** Pour éviter
 de bloquer tout le monde avant que le paiement soit prêt, le verrouillage est **désactivé par
