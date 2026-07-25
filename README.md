@@ -179,6 +179,55 @@ Sans cette variable (ou avec toute autre valeur), tout reste accessible à tous,
 - Le statut d'abonnement (`subscriptions/{uid}` dans Firestore) ne peut être mis à "active" que par les routes serveur (`/api/paypal/confirm`, `/api/stripe/webhook`) après vérification réelle du paiement — jamais directement par le navigateur, même en cas de manipulation.
 - Le verrouillage premium actuel couvre la lecture des PDF et les quiz (voir ci-dessus) — dis-moi si tu veux étendre ou réduire ce périmètre.
 
+## Rappels (notifications push : Fajr, Adhkar, Coran)
+
+Fonctionnent même quand le site est fermé, via des notifications push classiques (pas besoin
+d'app mobile). Page utilisateur : `/rappels`.
+
+### 1. Générer une paire de clés VAPID (une seule fois)
+
+```bash
+npx web-push generate-vapid-keys
+```
+Donne une clé publique et une clé privée. **Ne colle jamais la clé privée dans un chat ou un
+fichier suivi par Git** — uniquement dans `.env.local` et les variables Vercel.
+
+```
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VAPID_PUBLIC_KEY=            # même valeur que ci-dessus
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:ton-email@example.com
+CRON_SECRET=                 # une chaîne aléatoire longue, invente-la toi-même
+```
+
+### 2. Le cron qui envoie réellement les notifications
+
+`vercel.json` déclenche `/api/cron/reminders` toutes les 15 minutes automatiquement une fois
+déployé. ⚠️ Sur le plan **Hobby** (gratuit) de Vercel, les Cron Jobs peuvent être limités à une
+seule exécution par jour — dans ce cas les rappels à heure précise ne fonctionneront pas bien.
+Solution gratuite : utilise un service externe comme [cron-job.org](https://cron-job.org) pour
+appeler cette URL toutes les 15 minutes à la place :
+```
+https://ton-domaine.vercel.app/api/cron/reminders?secret=LA_VALEUR_DE_CRON_SECRET
+```
+
+### 3. Icône de notification (optionnel)
+
+Le service worker référence `/icon-192.png` — ajoute une image carrée (192×192px) à cet
+emplacement dans `public/` si tu veux une icône personnalisée sur les notifications ; sans elle,
+la notification s'affiche simplement sans icône.
+
+## Comptes complets et installation mobile (PWA)
+
+- **Mot de passe oublié** : disponible sur `/compte` (envoie un email de réinitialisation Firebase).
+- **Suppression de compte** : disponible sur `/compte` → "Zone de danger" — supprime le compte
+  Firebase Auth et les données Firestore associées (progression, abonnement, rappels).
+- **Installable comme une app mobile** : icônes et manifeste déjà en place
+  (`public/manifest.json`, `public/icon-192.png`, `public/icon-512.png`,
+  `public/apple-touch-icon.png`). Sur Android/Chrome, un bandeau "Ajouter à l'écran d'accueil"
+  apparaît automatiquement ; sur iPhone (Safari), l'utilisateur doit utiliser Partager → "Sur
+  l'écran d'accueil" (Apple ne propose pas de bandeau automatique).
+
 ## Lancer le projet en local
 
 ```bash

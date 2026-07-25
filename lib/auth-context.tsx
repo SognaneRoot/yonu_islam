@@ -2,14 +2,17 @@
 
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile,
   User,
 } from "firebase/auth";
+import { deleteDoc, doc } from "firebase/firestore";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getFirebaseAuth, isFirebaseConfigured } from "./firebase/client";
+import { getFirebaseAuth, getFirebaseDb, isFirebaseConfigured } from "./firebase/client";
 
 type AuthCtx = {
   user: User | null;
@@ -18,6 +21,8 @@ type AuthCtx = {
   signUp: (email: string, password: string, displayName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthCtx | null>(null);
@@ -59,9 +64,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await firebaseSignOut(auth);
   }
 
+  async function resetPassword(email: string) {
+    const auth = getFirebaseAuth();
+    if (!auth) throw new Error("Firebase n'est pas configuré.");
+    await sendPasswordResetEmail(auth, email);
+  }
+
+  async function deleteAccount() {
+    const auth = getFirebaseAuth();
+    const db = getFirebaseDb();
+    if (!auth?.currentUser) throw new Error("Aucun utilisateur connecté.");
+    const uid = auth.currentUser.uid;
+
+    if (db) {
+      // Best-effort : supprime les données associées avant le compte lui-même.
+      await Promise.allSettled([
+        deleteDoc(doc(db, "users", uid)),
+        deleteDoc(doc(db, "subscriptions", uid)),
+        deleteDoc(doc(db, "push_subscriptions", uid)),
+      ]);
+    }
+    await deleteUser(auth.currentUser);
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, firebaseReady: isFirebaseConfigured, signUp, signIn, logout }}
+      value={{
+        user,
+        loading,
+        firebaseReady: isFirebaseConfigured,
+        signUp,
+        signIn,
+        logout,
+        resetPassword,
+        deleteAccount,
+      }}
     >
       {children}
     </AuthContext.Provider>

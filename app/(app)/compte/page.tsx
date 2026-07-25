@@ -6,10 +6,10 @@ import { useAuth } from "@/lib/auth-context";
 import { useSubscription } from "@/lib/subscription";
 import Link from "next/link";
 import { useState } from "react";
-import { LogOut, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, LogOut, Mail, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 
 export default function ComptePage() {
-  const { user, loading, firebaseReady, signIn, signUp, logout } = useAuth();
+  const { user, loading, firebaseReady, signIn, signUp, logout, resetPassword, deleteAccount } = useAuth();
   const { hasPremium } = useSubscription();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -18,6 +18,9 @@ export default function ComptePage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   if (!firebaseReady) {
     return (
@@ -36,6 +39,21 @@ export default function ComptePage() {
   if (loading) return null;
 
   if (user) {
+    async function handleDelete() {
+      setDeleteError(null);
+      try {
+        await deleteAccount();
+      } catch (err: any) {
+        if (err?.code === "auth/requires-recent-login") {
+          setDeleteError(
+            "Pour ta sécurité, reconnecte-toi (déconnexion puis connexion) avant de supprimer ton compte."
+          );
+        } else {
+          setDeleteError("Impossible de supprimer le compte pour le moment.");
+        }
+      }
+    }
+
     return (
       <div className="space-y-6">
         <div>
@@ -67,6 +85,38 @@ export default function ComptePage() {
             </Link>
           </CardContent>
         </Card>
+
+        <Card className="border-red-500/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-300">
+              <AlertTriangle size={16} /> Zone de danger
+            </CardTitle>
+            <CardDescription>
+              Supprime définitivement ton compte et toutes tes données (progression, journal,
+              abonnement, rappels). Cette action est irréversible.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {deleteError && <p className="text-xs text-red-300">{deleteError}</p>}
+            {!confirmDelete ? (
+              <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+                <Trash2 size={16} /> Supprimer mon compte
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-beige-100">Es-tu sûr ? Cette action ne peut pas être annulée.</p>
+                <div className="flex gap-2">
+                  <Button variant="danger" onClick={handleDelete}>
+                    Oui, tout supprimer
+                  </Button>
+                  <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -87,6 +137,24 @@ export default function ComptePage() {
       }
     } catch (err: any) {
       setError(translateAuthError(err?.code) || "Une erreur est survenue.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    setError(null);
+    setResetSent(false);
+    if (!email) {
+      setError("Renseigne ton email ci-dessus, puis clique à nouveau sur ce lien.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await resetPassword(email);
+      setResetSent(true);
+    } catch (err: any) {
+      setError(translateAuthError(err?.code) || "Impossible d'envoyer l'email de réinitialisation.");
     } finally {
       setBusy(false);
     }
@@ -134,6 +202,20 @@ export default function ComptePage() {
               className="w-full rounded-xl border border-white/8 bg-night-700/50 px-3.5 py-2.5 text-sm text-beige-100 placeholder:text-sand-500 focus:border-gold-500/40 focus:outline-none"
             />
             {error && <p className="text-xs text-red-300">{error}</p>}
+            {resetSent && (
+              <p className="text-xs text-emerald-300">
+                Email envoyé — vérifie ta boîte de réception pour réinitialiser ton mot de passe.
+              </p>
+            )}
+            {mode === "login" && (
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-xs text-gold-400 hover:underline"
+              >
+                Mot de passe oublié ?
+              </button>
+            )}
             {mode === "signup" && (
               <label className="flex items-start gap-2 text-xs text-sand-400">
                 <input

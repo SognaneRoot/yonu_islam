@@ -19,6 +19,7 @@ import {
   Moon,
   UserCircle,
   Sparkles as SparklesIcon,
+  BellRing,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -37,6 +38,7 @@ const NAV = [
   { href: "/fiqh", label: "Fiqh", icon: Scale },
   { href: "/arabe", label: "Arabe", icon: Languages },
   { href: "/habitudes", label: "Habitudes", icon: ListChecks },
+  { href: "/rappels", label: "Rappels", icon: BellRing },
   { href: "/combat", label: "Mon Combat", icon: ShieldHalf },
   { href: "/bibliotheque", label: "Bibliothèque", icon: Library },
   { href: "/abonnement", label: "Abonnement", icon: SparklesIcon },

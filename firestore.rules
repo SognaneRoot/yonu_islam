@@ -14,5 +14,11 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;
     }
+
+    // Préférences de rappels + abonnement push : l'utilisateur gère librement les siens
+    // (aucune donnée sensible ici, juste ses propres préférences de notification).
+    match /push_subscriptions/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
   }
 }
