@@ -9,7 +9,8 @@ import { useState } from "react";
 import { AlertTriangle, LogOut, Mail, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 
 export default function ComptePage() {
-  const { user, loading, firebaseReady, signIn, signUp, logout, resetPassword, deleteAccount } = useAuth();
+  const { user, loading, firebaseReady, signIn, signUp, logout, resetPassword, resendVerificationEmail, deleteAccount } =
+    useAuth();
   const { hasPremium } = useSubscription();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -21,6 +22,8 @@ export default function ComptePage() {
   const [resetSent, setResetSent] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [verifyBusy, setVerifyBusy] = useState(false);
+  const [verifySent, setVerifySent] = useState(false);
 
   if (!firebaseReady) {
     return (
@@ -70,6 +73,39 @@ export default function ComptePage() {
             </Button>
           </CardContent>
         </Card>
+
+        {!user.emailVerified && (
+          <Card className="border-gold-500/25 bg-gold-500/5">
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
+              <div>
+                <p className="text-sm text-beige-100">Email non confirmé</p>
+                <p className="text-xs text-sand-400">
+                  Vérifie ta boîte mail pour confirmer ton adresse ({user.email}).
+                </p>
+              </div>
+              {verifySent ? (
+                <span className="text-xs text-emerald-300">Email renvoyé ✓</span>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={verifyBusy}
+                  onClick={async () => {
+                    setVerifyBusy(true);
+                    try {
+                      await resendVerificationEmail();
+                      setVerifySent(true);
+                    } finally {
+                      setVerifyBusy(false);
+                    }
+                  }}
+                >
+                  Renvoyer l'email
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

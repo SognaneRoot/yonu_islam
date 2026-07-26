@@ -237,7 +237,33 @@ la notification s'affiche simplement sans icône.
   apparaît automatiquement ; sur iPhone (Safari), l'utilisateur doit utiliser Partager → "Sur
   l'écran d'accueil" (Apple ne propose pas de bandeau automatique).
 
+## Emails de confirmation
+
+- **Inscription** : Firebase envoie automatiquement un email de vérification à la création du
+  compte (aucune configuration supplémentaire). Tant que l'email n'est pas confirmé, un bandeau
+  avec un bouton "Renvoyer l'email" apparaît sur `/compte`.
+- **Paiement (PayPal/Stripe)** : un email de confirmation "Abonnement activé" est envoyé
+  automatiquement via **Resend** juste après l'activation réelle de l'abonnement (donc jamais
+  envoyé sans paiement réellement vérifié). Optionnel — si `RESEND_API_KEY` n'est pas configurée,
+  le paiement fonctionne quand même, l'email est simplement sauté.
+
+Pour activer les emails de paiement :
+1. Crée un compte gratuit sur [resend.com](https://resend.com)
+2. Vérifie un domaine d'envoi (ou utilise leur domaine de test pour essayer rapidement)
+3. Ajoute `RESEND_API_KEY` et `RESEND_FROM_EMAIL` (voir `.env.example`)
+
+Note : Stripe et PayPal envoient aussi chacun leur propre reçu de paiement automatique
+(configurable dans leurs paramètres respectifs) — celui de Resend est un email supplémentaire,
+personnalisé avec la marque de l'application.
+
+## Toutes les variables d'environnement en un seul endroit
+
+Le fichier [`.env.example`](.env.example) à la racine du projet regroupe **toutes** les
+variables utilisées par l'application (Firebase, PayPal, Stripe, rappels push, emails). Copie-le
+en `.env.local` et remplis au fur et à mesure de ce que tu actives.
+
 ## Lancer le projet en local
+
 
 ```bash
 npm install

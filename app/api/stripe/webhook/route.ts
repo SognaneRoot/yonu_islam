@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getAdminDb } from "@/lib/firebase/admin";
+import { sendConfirmationEmail, subscriptionConfirmationEmail } from "@/lib/email";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -50,6 +51,12 @@ export async function POST(req: NextRequest) {
           reference: sub.id,
           expiresAt: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
         });
+
+        const email = session.customer_details?.email || session.customer_email;
+        if (email) {
+          const { subject, html } = subscriptionConfirmationEmail(plan || "monthly");
+          await sendConfirmationEmail(email, subject, html);
+        }
       }
       break;
     }

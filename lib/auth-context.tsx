@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   deleteUser,
   onAuthStateChanged,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
@@ -22,6 +23,7 @@ type AuthCtx = {
   signIn: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
   deleteAccount: () => Promise<void>;
 };
 
@@ -50,6 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!auth) throw new Error("Firebase n'est pas configuré.");
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     if (displayName) await updateProfile(cred.user, { displayName });
+    await sendEmailVerification(cred.user);
+  }
+
+  async function resendVerificationEmail() {
+    const auth = getFirebaseAuth();
+    if (!auth?.currentUser) throw new Error("Aucun utilisateur connecté.");
+    await sendEmailVerification(auth.currentUser);
   }
 
   async function signIn(email: string, password: string) {
@@ -97,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         logout,
         resetPassword,
+        resendVerificationEmail,
         deleteAccount,
       }}
     >

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDb, getAdminAuth } from "@/lib/firebase/admin";
+import { sendConfirmationEmail, subscriptionConfirmationEmail } from "@/lib/email";
 
 const PAYPAL_ENV = process.env.PAYPAL_ENV === "live" ? "live" : "sandbox";
 const PAYPAL_API =
@@ -64,6 +65,13 @@ export async function POST(req: NextRequest) {
       },
       { merge: true }
     );
+
+    const adminAuth = getAdminAuth();
+    const userRecord = adminAuth ? await adminAuth.getUser(uid).catch(() => null) : null;
+    if (userRecord?.email) {
+      const { subject, html } = subscriptionConfirmationEmail(plan);
+      await sendConfirmationEmail(userRecord.email, subject, html);
+    }
 
     return NextResponse.json({ ok: true, expiresAt });
   } catch (err: any) {
