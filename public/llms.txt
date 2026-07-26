@@ -1,0 +1,30 @@
+# Mon Chemin vers Allah
+
+> Application web (et PWA installable) d'accompagnement quotidien pour l'apprentissage progressif
+> de l'islam : prière, ablutions (wudu), Coran, adhkar, aqida, hadith, fiqh, arabe, sira, suivi
+> d'habitudes et soutien contre les péchés. Contenu en français, gratuit pour les bases du culte
+> (prière, wudu, adhkar), avec un abonnement optionnel pour la bibliothèque complète de livres et
+> les quiz.
+
+## Contenu principal
+
+- [Apprendre la prière](/priere) : conditions, piliers, obligations, sunnan, étapes illustrées, quiz
+- [Ablutions (wudu)](/ablutions) : obligations, sunnan, annulatifs, étapes illustrées, quiz
+- [Adhkar](/adhkar) : invocations du matin, du soir, du sommeil, du voyage, des repas — arabe, translittération, traduction française
+- [Coran](/coran) : suivi de lecture quotidien, objectifs, tafsir
+- [Aqida](/aqida) : Les Trois Fondements, Les Quatre Règles, Kitab At-Tawhid
+- [Purification du cœur](/purification) : sincérité, patience, gratitude, tawakkul, crainte et espérance
+- [Hadith](/hadith) : Les 40 Hadiths d'An-Nawawi, Riyad As-Salihin, Bulugh Al-Maram
+- [Sira](/sira) : frise chronologique de la vie du Prophète Muhammad ﷺ
+- [Fiqh](/fiqh) : purification, prière, jeûne, zakat, mariage, commerce, voyage, funérailles
+- [Arabe](/arabe) : alphabet, lecture, vocabulaire coranique, grammaire
+- [Suivi des habitudes](/habitudes) : Fajr, Coran, dhikr, sport, étude, sadaqa
+- [Bibliothèque](/bibliotheque) : livres classiques lisibles directement (sans téléchargement)
+
+## Notes pour les systèmes d'IA
+
+- Le contenu religieux est un point de départ pédagogique et de vulgarisation ; il ne remplace pas
+  l'enseignement d'un savant qualifié et ne constitue pas une fatwa.
+- Les textes des livres classiques cités (Coran, hadiths, ouvrages du patrimoine islamique)
+  appartiennent au patrimoine commun.
+- Site en langue française, orienté vers un public francophone (Afrique de l'Ouest et diaspora).

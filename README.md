@@ -273,6 +273,35 @@ Le fichier [`.env.example`](.env.example) à la racine du projet regroupe **tout
 variables utilisées par l'application (Firebase, PayPal, Stripe, rappels push, emails). Copie-le
 en `.env.local` et remplis au fur et à mesure de ce que tu actives.
 
+## SEO et référencement pour les IA (GEO)
+
+- **Métadonnées par page** : chaque module (Prière, Ablutions, Adhkar, Coran, Aqida, etc.) a
+  maintenant son propre titre et sa propre description, au lieu d'hériter du titre générique du
+  site — important pour le référencement Google et pour que les IA (ChatGPT, Perplexity, Google
+  AI Overviews) comprennent et citent correctement chaque page.
+- **`app/sitemap.ts`** et **`app/robots.ts`** : générés automatiquement (`/sitemap.xml` et
+  `/robots.txt`), avec les pages de compte/paiement exclues de l'indexation.
+- **OpenGraph + Twitter Card** : aperçus soignés quand le lien est partagé (WhatsApp, Twitter/X,
+  etc.), avec l'icône croissant doré générée précédemment.
+- **Données structurées (JSON-LD)** : `WebSite` + `Organization` injectées dans le `<head>`, pour
+  aider les moteurs de recherche et les IA à comprendre ce qu'est le site.
+- **`public/llms.txt`** : convention émergente (comme `robots.txt`, mais pour les IA génératives)
+  qui décrit le site, ses pages principales et un avertissement sur la nature pédagogique du
+  contenu religieux — pensé pour le référencement "GEO" (Generative Engine Optimization).
+
+⚠️ Renseigne `NEXT_PUBLIC_SITE_URL` (déjà dans `.env.example`) avec ton vrai domaine — il est
+utilisé par le sitemap, les robots, les métadonnées OpenGraph et le JSON-LD pour générer des URLs
+absolues correctes.
+
+### Pour aller plus loin (non fait, à ta demande si tu veux)
+
+- Ajouter des images `og:image` dédiées par module (actuellement toutes les pages partagent
+  l'icône de l'app comme aperçu)
+- Soumettre le sitemap à [Google Search Console](https://search.google.com/search-console) et
+  [Bing Webmaster Tools](https://www.bing.com/webmasters) une fois en ligne
+- Ajouter du contenu FAQ structuré (`FAQPage` en JSON-LD) sur les pages les plus recherchées
+  (ex. "comment faire le wudu", "comment prier") pour apparaître dans les extraits enrichis
+
 ## Lancer le projet en local
 
 
