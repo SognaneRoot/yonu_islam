@@ -209,15 +209,26 @@ VAPID_SUBJECT=mailto:ton-email@example.com
 CRON_SECRET=                 # une chaîne aléatoire longue, invente-la toi-même
 ```
 
-### 2. Le cron qui envoie réellement les notifications
+### 2. Le service qui envoie réellement les notifications
 
-`vercel.json` déclenche `/api/cron/reminders` toutes les 15 minutes automatiquement une fois
-déployé. ⚠️ Sur le plan **Hobby** (gratuit) de Vercel, les Cron Jobs peuvent être limités à une
-seule exécution par jour — dans ce cas les rappels à heure précise ne fonctionneront pas bien.
-Solution gratuite : utilise un service externe comme [cron-job.org](https://cron-job.org) pour
-appeler cette URL toutes les 15 minutes à la place :
-```
-https://ton-domaine.vercel.app/api/cron/reminders?secret=LA_VALEUR_DE_CRON_SECRET
+⚠️ Le plan **Hobby (gratuit)** de Vercel limite les Cron Jobs à **une seule exécution par jour**,
+ce qui bloque même le déploiement si on demande une fréquence plus rapide. Il n'y a donc **pas**
+de `vercel.json` avec cron dans ce projet — utilise un service externe gratuit à la place :
+
+1. Crée un compte sur [cron-job.org](https://cron-job.org) (gratuit)
+2. Crée un nouveau cron job qui appelle cette URL toutes les 15 minutes :
+   ```
+   https://ton-domaine.vercel.app/api/cron/reminders
+   ```
+3. Dans les options avancées du cron job, ajoute un en-tête HTTP personnalisé :
+   ```
+   Authorization: Bearer LA_VALEUR_DE_CRON_SECRET
+   ```
+
+Si tu passes un jour sur le plan **Pro** de Vercel, tu pourras réintroduire un `vercel.json` avec
+un cron natif toutes les 15 minutes :
+```json
+{ "crons": [{ "path": "/api/cron/reminders", "schedule": "*/15 * * * *" }] }
 ```
 
 ### 3. Icône de notification (optionnel)
