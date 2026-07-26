@@ -11,13 +11,8 @@ function ensureAdminApp() {
   const json = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (!json) return null;
   if (!adminApp) {
-    try {
-      const serviceAccount = JSON.parse(json);
-      adminApp = getApps().length ? getApps()[0] : initializeApp({ credential: cert(serviceAccount) });
-    } catch (err) {
-      console.error("FIREBASE_SERVICE_ACCOUNT_KEY invalide (JSON mal formé) :", err);
-      return null;
-    }
+    const serviceAccount = JSON.parse(json);
+    adminApp = getApps().length ? getApps()[0] : initializeApp({ credential: cert(serviceAccount) });
   }
   return adminApp;
 }
