@@ -59,10 +59,11 @@ export default function AbonnementPage() {
     setError(null);
     setStripeLoading(true);
     try {
+      const idToken = await user!.getIdToken();
       const res = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user!.uid, email: user!.email, plan: selectedPlan }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ email: user!.email, plan: selectedPlan }),
       });
       const json = await res.json();
       if (json.url) {
@@ -161,11 +162,11 @@ export default function AbonnementPage() {
                       }
                       onApprove={async (data) => {
                         setError(null);
+                        const idToken = await user!.getIdToken();
                         const res = await fetch("/api/paypal/confirm", {
                           method: "POST",
-                          headers: { "Content-Type": "application/json" },
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
                           body: JSON.stringify({
-                            uid: user!.uid,
                             subscriptionID: data.subscriptionID,
                             plan: selectedPlan,
                           }),

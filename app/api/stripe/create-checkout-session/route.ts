@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
+import { getVerifiedUid } from "@/lib/verify-request";
 
 export async function POST(req: NextRequest) {
   try {
-    const { uid, email, plan } = await req.json();
-    if (!uid || !plan) {
+    const uid = await getVerifiedUid(req);
+    if (!uid) {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+    }
+
+    const { email, plan } = await req.json();
+    if (!plan) {
       return NextResponse.json({ error: "Paramètres manquants." }, { status: 400 });
     }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb, getAdminAuth } from "@/lib/firebase/admin";
+import { getVerifiedUid } from "@/lib/verify-request";
 import { sendConfirmationEmail, subscriptionConfirmationEmail } from "@/lib/email";
 
 const PAYPAL_ENV = process.env.PAYPAL_ENV === "live" ? "live" : "sandbox";
@@ -26,8 +27,13 @@ async function getPayPalAccessToken() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { uid, subscriptionID, plan } = await req.json();
-    if (!uid || !subscriptionID || !plan) {
+    const uid = await getVerifiedUid(req);
+    if (!uid) {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+    }
+
+    const { subscriptionID, plan } = await req.json();
+    if (!subscriptionID || !plan) {
       return NextResponse.json({ error: "Paramètres manquants." }, { status: 400 });
     }
 
