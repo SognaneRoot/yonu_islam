@@ -54,59 +54,64 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 
-  const db = getAdminDb();
-  if (!db) return NextResponse.json({ error: "Firebase Admin non configuré." }, { status: 500 });
-  if (!configureWebPush()) return NextResponse.json({ error: "VAPID non configuré." }, { status: 500 });
+  try {
+    const db = getAdminDb();
+    if (!db) return NextResponse.json({ error: "Firebase Admin non configuré (FIREBASE_SERVICE_ACCOUNT_KEY absente ou invalide)." }, { status: 500 });
+    if (!configureWebPush()) return NextResponse.json({ error: "VAPID non configuré (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY absentes)." }, { status: 500 });
 
-  const snap = await db.collection("push_subscriptions").get();
-  let sent = 0;
+    const snap = await db.collection("push_subscriptions").get();
+    let sent = 0;
 
-  for (const docSnap of snap.docs) {
-    const data = docSnap.data() as any;
-    if (!data.subscription) continue;
+    for (const docSnap of snap.docs) {
+      const data = docSnap.data() as any;
+      if (!data.subscription) continue;
 
-    const tz = data.timezone || "UTC";
-    const lastSent: Record<string, string> = data.lastSent || {};
-    const updates: Record<string, string> = {};
-    const todayKey = todayKeyInTz(tz);
-    const nowHHmm = nowHHmmInTz(tz);
+      const tz = data.timezone || "UTC";
+      const lastSent: Record<string, string> = data.lastSent || {};
+      const updates: Record<string, string> = {};
+      const todayKey = todayKeyInTz(tz);
+      const nowHHmm = nowHHmmInTz(tz);
 
-    async function trySend(type: string, title: string, body: string) {
-      if (lastSent[type] === todayKey) return;
-      try {
-        await webpush.sendNotification(data.subscription, JSON.stringify({ title, body }));
-        updates[type] = todayKey;
-        sent++;
-      } catch (err: any) {
-        if (err?.statusCode === 410 || err?.statusCode === 404) {
-          await docSnap.ref.set({ subscription: null }, { merge: true });
+      async function trySend(type: string, title: string, body: string) {
+        if (lastSent[type] === todayKey) return;
+        try {
+          await webpush.sendNotification(data.subscription, JSON.stringify({ title, body }));
+          updates[type] = todayKey;
+          sent++;
+        } catch (err: any) {
+          if (err?.statusCode === 410 || err?.statusCode === 404) {
+            await docSnap.ref.set({ subscription: null }, { merge: true });
+          }
         }
       }
-    }
 
-    if (data.adhkarMatinEnabled && minutesDiff(nowHHmm, data.adhkarMatinTime || "06:00") <= WINDOW_MINUTES) {
-      await trySend("adhkarMatin", "Adhkar du matin", "C'est le moment de tes invocations du matin.");
-    }
-    if (data.adhkarSoirEnabled && minutesDiff(nowHHmm, data.adhkarSoirTime || "18:00") <= WINDOW_MINUTES) {
-      await trySend("adhkarSoir", "Adhkar du soir", "C'est le moment de tes invocations du soir.");
-    }
-    if (data.coranEnabled && minutesDiff(nowHHmm, data.coranTime || "20:00") <= WINDOW_MINUTES) {
-      await trySend("coran", "Lecture du Coran", "N'oublie pas ta lecture du Coran aujourd'hui.");
-    }
-    if (data.fajrEnabled && typeof data.lat === "number" && typeof data.lon === "number") {
-      const coordinates = new Coordinates(data.lat, data.lon);
-      const params = CalculationMethod.MuslimWorldLeague();
-      const prayerTimes = new PrayerTimes(coordinates, new Date(), params);
-      const diffMs = Math.abs(Date.now() - prayerTimes.fajr.getTime());
-      if (diffMs <= WINDOW_MINUTES * 60000) {
-        await trySend("fajr", "Fajr", "L'heure de la prière de Fajr approche.");
+      if (data.adhkarMatinEnabled && minutesDiff(nowHHmm, data.adhkarMatinTime || "06:00") <= WINDOW_MINUTES) {
+        await trySend("adhkarMatin", "Adhkar du matin", "C'est le moment de tes invocations du matin.");
+      }
+      if (data.adhkarSoirEnabled && minutesDiff(nowHHmm, data.adhkarSoirTime || "18:00") <= WINDOW_MINUTES) {
+        await trySend("adhkarSoir", "Adhkar du soir", "C'est le moment de tes invocations du soir.");
+      }
+      if (data.coranEnabled && minutesDiff(nowHHmm, data.coranTime || "20:00") <= WINDOW_MINUTES) {
+        await trySend("coran", "Lecture du Coran", "N'oublie pas ta lecture du Coran aujourd'hui.");
+      }
+      if (data.fajrEnabled && typeof data.lat === "number" && typeof data.lon === "number") {
+        const coordinates = new Coordinates(data.lat, data.lon);
+        const params = CalculationMethod.MuslimWorldLeague();
+        const prayerTimes = new PrayerTimes(coordinates, new Date(), params);
+        const diffMs = Math.abs(Date.now() - prayerTimes.fajr.getTime());
+        if (diffMs <= WINDOW_MINUTES * 60000) {
+          await trySend("fajr", "Fajr", "L'heure de la prière de Fajr approche.");
+        }
+      }
+
+      if (Object.keys(updates).length) {
+        await docSnap.ref.set({ lastSent: { ...lastSent, ...updates } }, { merge: true });
       }
     }
 
-    if (Object.keys(updates).length) {
-      await docSnap.ref.set({ lastSent: { ...lastSent, ...updates } }, { merge: true });
-    }
+    return NextResponse.json({ ok: true, sent });
+  } catch (err: any) {
+    console.error("Erreur dans /api/cron/reminders :", err);
+    return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });
   }
-
-  return NextResponse.json({ ok: true, sent });
 }
