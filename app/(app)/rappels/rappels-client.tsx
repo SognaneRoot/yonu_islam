@@ -28,6 +28,8 @@ export function RappelsClient() {
   const [manualLat, setManualLat] = useState("");
   const [manualLon, setManualLon] = useState("");
   const [showManual, setShowManual] = useState(false);
+  const [testBusy, setTestBusy] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
 
   if (!firebaseReady) {
     return (
@@ -140,6 +142,24 @@ export function RappelsClient() {
     }
   }
 
+  async function sendTestNotification() {
+    setTestResult(null);
+    setTestBusy(true);
+    try {
+      const idToken = await user!.getIdToken();
+      const res = await fetch("/api/push/test", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      const json = await res.json();
+      setTestResult(json.ok ? "Notification de test envoyée — regarde ton écran." : json.error);
+    } catch {
+      setTestResult("Échec de l'envoi du test.");
+    } finally {
+      setTestBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -147,6 +167,13 @@ export function RappelsClient() {
         <p className="mt-1 text-sm text-sand-400">
           Reçois une notification même quand le site est fermé.
         </p>
+      </div>
+
+      <div>
+        <Button size="sm" variant="outline" disabled={testBusy} onClick={sendTestNotification}>
+          {testBusy ? "Envoi..." : "Envoyer une notification de test"}
+        </Button>
+        {testResult && <p className="mt-2 text-xs text-sand-400">{testResult}</p>}
       </div>
 
       {error && <p className="text-sm text-red-300">{error}</p>}

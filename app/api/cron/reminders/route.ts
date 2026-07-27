@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
         updates[type] = todayKey;
         sent++;
       } catch (err: any) {
+        console.error(`Échec d'envoi push (${type}) pour ${docSnap.id} :`, err?.statusCode, err?.body || err?.message);
         if (err?.statusCode === 410 || err?.statusCode === 404) {
           await docSnap.ref.set({ subscription: null }, { merge: true });
         }
