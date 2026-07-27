@@ -5,12 +5,23 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./auth-context";
 import { getFirebaseDb } from "./firebase/client";
 
+export type PrayerKey = "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
+
+export const PRAYER_LABELS: Record<PrayerKey, string> = {
+  fajr: "Fajr",
+  dhuhr: "Dhuhr",
+  asr: "Asr",
+  maghrib: "Maghrib",
+  isha: "Isha",
+};
+
 export type ReminderPrefs = {
   subscription: PushSubscriptionJSON | null;
   timezone: string | null;
-  fajrEnabled: boolean;
   lat: number | null;
   lon: number | null;
+  locationLabel: string | null;
+  prayers: Record<PrayerKey, boolean>;
   adhkarMatinEnabled: boolean;
   adhkarMatinTime: string; // "HH:mm"
   adhkarSoirEnabled: boolean;
@@ -23,9 +34,10 @@ export type ReminderPrefs = {
 const DEFAULT_PREFS: ReminderPrefs = {
   subscription: null,
   timezone: null,
-  fajrEnabled: false,
   lat: null,
   lon: null,
+  locationLabel: null,
+  prayers: { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false },
   adhkarMatinEnabled: false,
   adhkarMatinTime: "06:00",
   adhkarSoirEnabled: false,
@@ -52,7 +64,12 @@ export function useReminderPrefs() {
     const unsub = onSnapshot(
       ref,
       (snap) => {
-        setPrefs(snap.exists() ? { ...DEFAULT_PREFS, ...(snap.data() as Partial<ReminderPrefs>) } : DEFAULT_PREFS);
+        const data = snap.exists() ? (snap.data() as Partial<ReminderPrefs>) : {};
+        setPrefs({
+          ...DEFAULT_PREFS,
+          ...data,
+          prayers: { ...DEFAULT_PREFS.prayers, ...(data.prayers || {}) },
+        });
         setLoading(false);
       },
       () => setLoading(false)

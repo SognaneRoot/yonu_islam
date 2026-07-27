@@ -5,6 +5,14 @@ import { Coordinates, CalculationMethod, PrayerTimes } from "adhan";
 
 const WINDOW_MINUTES = 7; // tolérance autour de l'heure cible (le cron tourne ~ toutes les 15 min)
 
+const PRAYER_LABELS: Record<string, string> = {
+  fajr: "Fajr",
+  dhuhr: "Dhuhr",
+  asr: "Asr",
+  maghrib: "Maghrib",
+  isha: "Isha",
+};
+
 function configureWebPush() {
   const pub = process.env.VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
@@ -93,13 +101,26 @@ export async function GET(req: NextRequest) {
     if (data.coranEnabled && minutesDiff(nowHHmm, data.coranTime || "20:00") <= WINDOW_MINUTES) {
       await trySend("coran", "Lecture du Coran", "N'oublie pas ta lecture du Coran aujourd'hui.");
     }
-    if (data.fajrEnabled && typeof data.lat === "number" && typeof data.lon === "number") {
+
+    const prayers = data.prayers || {};
+    const hasAnyPrayerEnabled = Object.values(prayers).some(Boolean);
+    if (hasAnyPrayerEnabled && typeof data.lat === "number" && typeof data.lon === "number") {
       const coordinates = new Coordinates(data.lat, data.lon);
       const params = CalculationMethod.MuslimWorldLeague();
       const prayerTimes = new PrayerTimes(coordinates, new Date(), params);
-      const diffMs = Math.abs(Date.now() - prayerTimes.fajr.getTime());
-      if (diffMs <= WINDOW_MINUTES * 60000) {
-        await trySend("fajr", "Fajr", "L'heure de la prière de Fajr approche.");
+      const times: Record<string, Date> = {
+        fajr: prayerTimes.fajr,
+        dhuhr: prayerTimes.dhuhr,
+        asr: prayerTimes.asr,
+        maghrib: prayerTimes.maghrib,
+        isha: prayerTimes.isha,
+      };
+      for (const key of Object.keys(times)) {
+        if (!prayers[key]) continue;
+        const diffMs = Math.abs(Date.now() - times[key].getTime());
+        if (diffMs <= WINDOW_MINUTES * 60000) {
+          await trySend(key, PRAYER_LABELS[key], `C'est l'heure de la prière de ${PRAYER_LABELS[key]}.`);
+        }
       }
     }
 
