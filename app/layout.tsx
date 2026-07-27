@@ -58,6 +58,9 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Mon Chemin",
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   openGraph: {
     type: "website",
     locale: "fr_FR",

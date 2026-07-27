@@ -3,6 +3,7 @@
 import { useAppData } from "@/lib/store";
 import { levelForXp } from "@/lib/data/levels";
 import { Sidebar } from "./sidebar";
+import { ScrollToTop } from "./scroll-to-top";
 import { Flame, Menu, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -76,6 +77,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </footer>
       </div>
+
+      <ScrollToTop />
     </div>
   );
 }
