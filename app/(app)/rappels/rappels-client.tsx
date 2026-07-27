@@ -151,10 +151,18 @@ export function RappelsClient() {
         method: "POST",
         headers: { Authorization: `Bearer ${idToken}` },
       });
-      const json = await res.json();
-      setTestResult(json.ok ? "Notification de test envoyée — regarde ton écran." : json.error);
-    } catch {
-      setTestResult("Échec de l'envoi du test.");
+      const raw = await res.text();
+      let json: any = null;
+      try {
+        json = JSON.parse(raw);
+      } catch {
+        // réponse non-JSON (page d'erreur Vercel, timeout, crash au démarrage...)
+        setTestResult(`Erreur serveur (HTTP ${res.status}) — réponse brute : ${raw.slice(0, 200) || "(vide)"}`);
+        return;
+      }
+      setTestResult(json.ok ? "Notification de test envoyée — regarde ton écran." : `${json.error} (HTTP ${res.status})`);
+    } catch (err: any) {
+      setTestResult(`Échec de la requête : ${err?.message || "erreur réseau inconnue"}`);
     } finally {
       setTestBusy(false);
     }
