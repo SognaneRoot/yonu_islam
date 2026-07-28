@@ -14,8 +14,11 @@ export function isPushSupported() {
 }
 
 /** Demande la permission de notification puis crée un abonnement push.
- * Renvoie `null` si refusé ou non supporté. */
-export async function subscribeToPush(): Promise<PushSubscription | null> {
+ * Renvoie `null` si refusé ou non supporté.
+ * @param forceFresh Si vrai, désabonne d'abord toute souscription existante avant
+ * d'en recréer une — utile car le navigateur peut garder localement une souscription
+ * que le service push a entre-temps invalidée côté serveur ("expired"). */
+export async function subscribeToPush(forceFresh = false): Promise<PushSubscription | null> {
   if (!isPushSupported()) return null;
 
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -28,7 +31,10 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
   await navigator.serviceWorker.ready;
 
   const existing = await registration.pushManager.getSubscription();
-  if (existing) return existing;
+  if (existing) {
+    if (!forceFresh) return existing;
+    await existing.unsubscribe();
+  }
 
   return registration.pushManager.subscribe({
     userVisibleOnly: true,

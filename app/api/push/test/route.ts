@@ -6,8 +6,9 @@ import { getVerifiedUid } from "@/lib/verify-request";
 import webpush from "web-push";
 
 export async function POST(req: NextRequest) {
+  let uid: string | null = null;
   try {
-    const uid = await getVerifiedUid(req);
+    uid = await getVerifiedUid(req);
     if (!uid) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
 
     const pub = process.env.VAPID_PUBLIC_KEY;
@@ -37,6 +38,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     console.error("Échec du test push :", err?.statusCode, err?.body || err?.message);
+
+    if (err?.statusCode === 410 || err?.statusCode === 404) {
+      const db = getAdminDb();
+      if (db && uid) {
+        await db.collection("push_subscriptions").doc(uid).set({ subscription: null }, { merge: true });
+      }
+      return NextResponse.json(
+        {
+          error:
+            "Ton abonnement précédent a expiré et vient d'être effacé. Clique sur « Réinitialiser mon abonnement » ci-dessus, puis réessaie le test.",
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: `Échec de l'envoi : ${err?.body || err?.message || "erreur inconnue"}` },
       { status: 500 }

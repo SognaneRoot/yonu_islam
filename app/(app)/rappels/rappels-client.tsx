@@ -142,6 +142,23 @@ export function RappelsClient() {
     }
   }
 
+  async function resetSubscription() {
+    setError(null);
+    setTestResult(null);
+    setBusy("reset");
+    try {
+      const sub = await subscribeToPush(true);
+      if (!sub) throw new Error("Permission de notification refusée.");
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      await savePrefs({ subscription: sub.toJSON(), timezone });
+      setTestResult("Abonnement renouvelé — réessaie le test maintenant.");
+    } catch (err: any) {
+      setError(err?.message || "Impossible de réinitialiser l'abonnement.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function sendTestNotification() {
     setTestResult(null);
     setTestBusy(true);
@@ -177,12 +194,15 @@ export function RappelsClient() {
         </p>
       </div>
 
-      <div>
+      <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" disabled={testBusy} onClick={sendTestNotification}>
           {testBusy ? "Envoi..." : "Envoyer une notification de test"}
         </Button>
-        {testResult && <p className="mt-2 text-xs text-sand-400">{testResult}</p>}
+        <Button size="sm" variant="ghost" disabled={busy === "reset"} onClick={resetSubscription}>
+          {busy === "reset" ? "Réinitialisation..." : "Réinitialiser mon abonnement"}
+        </Button>
       </div>
+      {testResult && <p className="mt-2 text-xs text-sand-400">{testResult}</p>}
 
       {error && <p className="text-sm text-red-300">{error}</p>}
 
