@@ -28,8 +28,6 @@ export function RappelsClient() {
   const [manualLat, setManualLat] = useState("");
   const [manualLon, setManualLon] = useState("");
   const [showManual, setShowManual] = useState(false);
-  const [testBusy, setTestBusy] = useState(false);
-  const [testResult, setTestResult] = useState<string | null>(null);
 
   if (!firebaseReady) {
     return (
@@ -63,7 +61,9 @@ export function RappelsClient() {
     if (!isPushSupported()) {
       throw new Error("Les notifications ne sont pas prises en charge sur cet appareil/navigateur.");
     }
-    const sub = await subscribeToPush();
+    // forceFresh=true : évite de réutiliser un abonnement que le navigateur croit valide
+    // mais que le service push a peut-être déjà invalidé côté serveur.
+    const sub = await subscribeToPush(true);
     if (!sub) {
       throw new Error(
         "Permission de notification refusée ou bloquée par le navigateur (sur Brave : brave://settings/privacy → active « Use Google services for push messaging »)."
@@ -142,49 +142,6 @@ export function RappelsClient() {
     }
   }
 
-  async function resetSubscription() {
-    setError(null);
-    setTestResult(null);
-    setBusy("reset");
-    try {
-      const sub = await subscribeToPush(true);
-      if (!sub) throw new Error("Permission de notification refusée.");
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await savePrefs({ subscription: sub.toJSON(), timezone });
-      setTestResult("Abonnement renouvelé — réessaie le test maintenant.");
-    } catch (err: any) {
-      setError(err?.message || "Impossible de réinitialiser l'abonnement.");
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function sendTestNotification() {
-    setTestResult(null);
-    setTestBusy(true);
-    try {
-      const idToken = await user!.getIdToken();
-      const res = await fetch("/api/push/test", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-      const raw = await res.text();
-      let json: any = null;
-      try {
-        json = JSON.parse(raw);
-      } catch {
-        // réponse non-JSON (page d'erreur Vercel, timeout, crash au démarrage...)
-        setTestResult(`Erreur serveur (HTTP ${res.status}) — réponse brute : ${raw.slice(0, 200) || "(vide)"}`);
-        return;
-      }
-      setTestResult(json.ok ? "Notification de test envoyée — regarde ton écran." : `${json.error} (HTTP ${res.status})`);
-    } catch (err: any) {
-      setTestResult(`Échec de la requête : ${err?.message || "erreur réseau inconnue"}`);
-    } finally {
-      setTestBusy(false);
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div>
@@ -193,16 +150,6 @@ export function RappelsClient() {
           Reçois une notification même quand le site est fermé.
         </p>
       </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" disabled={testBusy} onClick={sendTestNotification}>
-          {testBusy ? "Envoi..." : "Envoyer une notification de test"}
-        </Button>
-        <Button size="sm" variant="ghost" disabled={busy === "reset"} onClick={resetSubscription}>
-          {busy === "reset" ? "Réinitialisation..." : "Réinitialiser mon abonnement"}
-        </Button>
-      </div>
-      {testResult && <p className="mt-2 text-xs text-sand-400">{testResult}</p>}
 
       {error && <p className="text-sm text-red-300">{error}</p>}
 

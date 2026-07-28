@@ -1,6 +1,7 @@
 "use client";
 
 import { ImageOff } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 export function StepImage({ src, alt }: { src: string; alt: string }) {
@@ -18,13 +19,18 @@ export function StepImage({ src, alt }: { src: string; alt: string }) {
     );
   }
 
-  // eslint-disable-next-line @next/next/no-img-element
   return (
-    <img
-      src={src}
-      alt={alt}
-      onError={() => setErrored(true)}
-      className="aspect-square w-full rounded-xl border border-white/8 object-cover"
-    />
+    <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-white/8 bg-night-700/40">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        quality={70}
+        loading="lazy"
+        onError={() => setErrored(true)}
+        className="object-cover"
+      />
+    </div>
   );
 }
