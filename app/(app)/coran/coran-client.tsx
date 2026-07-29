@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BookCard } from "@/components/book-card";
 import { useAppData } from "@/lib/store";
 import { todayISO, normalizeKey } from "@/lib/utils";
-import { BookOpen, Star } from "lucide-react";
+import { BookOpen, Star, Volume2 } from "lucide-react";
 import { useState } from "react";
 
 const TOTAL_PAGES = 604;
@@ -14,6 +14,8 @@ const TOTAL_PAGES = 604;
 export function CoranClient() {
   const { data, update, addXp } = useAppData();
   const [pagesToday, setPagesToday] = useState(1);
+  const [audioSurah, setAudioSurah] = useState(1);
+  const [reciter, setReciter] = useState("ar.alafasy");
   const pagesRead = data.notes["coran-pages-read"] ? parseInt(data.notes["coran-pages-read"]) : 0;
   const todayLog = data.studyMinutesLog[todayISO()] || 0;
   const quranBook = data.library.find((b) => normalizeKey(b.category) === "coran");
@@ -81,6 +83,52 @@ export function CoranClient() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Volume2 size={16} className="text-gold-400" /> Écouter la récitation
+          </CardTitle>
+          <CardDescription>Récitation audio via Al Quran Cloud (gratuit, sans compte)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap gap-3">
+            <div>
+              <label className="mb-1 block text-[11px] text-sand-400">Sourate</label>
+              <select
+                value={audioSurah}
+                onChange={(e) => setAudioSurah(Number(e.target.value))}
+                className="rounded-lg border border-white/10 bg-night-700/50 px-2 py-1.5 text-sm text-beige-100"
+              >
+                {Array.from({ length: 114 }).map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Sourate {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] text-sand-400">Récitateur</label>
+              <select
+                value={reciter}
+                onChange={(e) => setReciter(e.target.value)}
+                className="rounded-lg border border-white/10 bg-night-700/50 px-2 py-1.5 text-sm text-beige-100"
+              >
+                <option value="ar.alafasy">Mishary Alafasy</option>
+                <option value="ar.husary">Mahmoud Al-Husary</option>
+                <option value="ar.abdulbasitmurattal">Abdul Basit</option>
+                <option value="ar.minshawi">Al-Minshawi</option>
+              </select>
+            </div>
+          </div>
+          <audio
+            key={`${reciter}-${audioSurah}`}
+            controls
+            className="w-full"
+            src={`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${audioSurah}.mp3`}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

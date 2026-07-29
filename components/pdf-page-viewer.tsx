@@ -14,6 +14,7 @@ export function PdfPageViewer({
   totalPages,
   onPageChange,
   backHref = "/bibliotheque",
+  authToken,
 }: {
   file: string;
   title: string;
@@ -21,6 +22,7 @@ export function PdfPageViewer({
   totalPages?: number;
   onPageChange: (page: number) => void;
   backHref?: string;
+  authToken?: string | null;
 }) {
   const [numPages, setNumPages] = useState<number | null>(totalPages || null);
   const [width, setWidth] = useState(360);
@@ -88,7 +90,11 @@ export function PdfPageViewer({
         onContextMenu={(e) => e.preventDefault()}
       >
         <Document
-          file={file}
+          file={
+            (authToken
+              ? { url: file, httpHeaders: { Authorization: `Bearer ${authToken}` } }
+              : file) as any
+          }
           onLoadSuccess={({ numPages: n }) => setNumPages(n)}
           loading={
             <div className="flex h-64 items-center justify-center text-beige-100">

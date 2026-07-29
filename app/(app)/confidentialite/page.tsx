@@ -7,7 +7,7 @@ export default function ConfidentialitePage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="font-display text-2xl text-beige-50">Politique de confidentialité</h1>
-        <p className="mt-1 text-sm text-sand-400">Dernière mise à jour : à compléter</p>
+        <p className="mt-1 text-sm text-sand-400">Dernière mise à jour : 28 juillet 2026</p>
       </div>
 
       <Card>
@@ -20,9 +20,12 @@ export default function ConfidentialitePage() {
           <section>
             <h2 className="font-display text-base text-beige-50">1. Qui sommes-nous</h2>
             <p>
-              [À compléter : nom de l'éditeur du site, pays, contact — ex. nom/entreprise, ville,
-              email de contact]. C'est cette entité qui est responsable du traitement de tes
-              données au sens de la réglementation applicable.
+              <strong>Yonu Islam</strong>, basé au Sénégal. Pour toute question relative à tes
+              données personnelles, contacte-nous à{" "}
+              <a href="mailto:yonu.islam@gmail.com" className="text-gold-400 hover:underline">
+                yonu.islam@gmail.com
+              </a>{" "}
+              ou au +221 77 191 64 66.
             </p>
           </section>
 
@@ -79,9 +82,12 @@ export default function ConfidentialitePage() {
             <h2 className="font-display text-base text-beige-50">7. Tes droits</h2>
             <p>
               Tu peux à tout moment demander l'accès, la correction ou la suppression de tes
-              données, en nous contactant à [email de contact à compléter]. Tu peux aussi
-              simplement supprimer ton compte depuis la page "Mon compte" [fonctionnalité à activer
-              si tu la souhaites].
+              données, en nous contactant à{" "}
+              <a href="mailto:yonu.islam@gmail.com" className="text-gold-400 hover:underline">
+                yonu.islam@gmail.com
+              </a>{" "}
+              (ou par téléphone au +221 77 191 64 66). Tu peux aussi supprimer ton compte toi-même
+              depuis la page "Mon compte".
             </p>
           </section>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
 import { DEFAULT_HABITS } from "./data/habits";
 import { DEFAULT_LIBRARY, LibraryItem } from "./data/library";
 import { todayISO } from "./utils";
@@ -86,6 +86,37 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     dataRef.current = data;
   }, [data]);
+
+  // Livres ajoutés depuis le panneau d'admin (Firestore, public en lecture) : fusionnés
+  // en plus des livres codés en dur, sans jamais écraser la progression déjà enregistrée.
+  useEffect(() => {
+    const db = getFirebaseDb();
+    if (!db) return;
+    const unsub = onSnapshot(collection(db, "library_catalog"), (snap) => {
+      const extraBooks: LibraryItem[] = snap.docs.map((d) => {
+        const v = d.data() as any;
+        return {
+          id: d.id,
+          title: v.title || "Sans titre",
+          category: v.category || "",
+          file: v.file || undefined,
+          pages: v.pages || 0,
+          progress: 0,
+          favorite: false,
+        };
+      });
+      if (extraBooks.length === 0) return;
+      setData((prev) => {
+        const byId = new Map(prev.library.map((b) => [b.id, b]));
+        for (const extra of extraBooks) {
+          const existing = byId.get(extra.id);
+          byId.set(extra.id, existing ? { ...existing, ...extra, progress: existing.progress, favorite: existing.favorite } : extra);
+        }
+        return { ...prev, library: Array.from(byId.values()) };
+      });
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     try {

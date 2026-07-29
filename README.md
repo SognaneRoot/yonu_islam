@@ -302,6 +302,66 @@ absolues correctes.
 - Ajouter du contenu FAQ structuré (`FAQPage` en JSON-LD) sur les pages les plus recherchées
   (ex. "comment faire le wudu", "comment prier") pour apparaître dans les extraits enrichis
 
+## Audio (Coran automatique, Adhkar à toi de fournir)
+
+- **Coran** : lecteur audio intégré sur `/coran`, sans rien à configurer — utilise l'API publique
+  et gratuite [Al Quran Cloud](https://alquran.cloud) (CDN `cdn.islamic.network`), avec 4
+  récitateurs au choix (Alafasy, Al-Husary, Abdul Basit, Al-Minshawi).
+- **Adhkar** : le code est prêt (bouton "Écouter" sur chaque carte, caché proprement si le
+  fichier n'existe pas), mais **il n'existe pas d'API publique équivalente pour les adhkar** — il
+  faut fournir les fichiers toi-même. Sources gratuites et largement diffusées :
+  - [IslamHouse.com](https://islamhouse.com) → recherche "Hisnul Muslim audio" (nombreuses langues/récitateurs)
+  - [Archive.org](https://archive.org) → recherche "Hisnul Muslim" ou "Fortress of the Muslim audio"
+  
+  Dépose chaque fichier dans `public/assets/audio/adhkar/` en le nommant **exactement** comme
+  l'id du dhikr correspondant dans `lib/data/adhkar.ts` (ex. `matin-1.mp3`, `soir-2.mp3`) — la
+  liste complète des ids s'y trouve.
+
+## reCAPTCHA (anti-bot à l'inscription)
+
+1. Va sur [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin/create)
+2. Choisis **reCAPTCHA v2** → "Cases à cocher 'Je ne suis pas un robot'"
+3. Ajoute ton domaine (`yonu-islam.vercel.app`)
+4. Récupère les deux clés :
+```
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
+RECAPTCHA_SECRET_KEY=
+```
+Sans ces variables, l'inscription fonctionne normalement, juste sans protection anti-bot.
+
+## Protection des PDF (accès contrôlé au lieu de fichiers publics)
+
+Les PDF ne sont plus servis directement depuis `public/assets/books/` — ils passent maintenant
+par une route serveur (`/api/books/[filename]`) qui vérifie l'identité et l'abonnement **avant**
+de renvoyer le fichier. Ça bloque l'accès direct par URL, contrairement à avant.
+
+**Migration nécessaire** : déplace tous tes PDF de `public/assets/books/` vers un nouveau dossier
+`private-books/` (même noms de fichiers, juste un dossier différent, à la racine du projet) :
+```powershell
+cd E:\mon-chemin-vers-allah
+Move-Item public\assets\books\*.pdf private-books\
+```
+Les livres des catégories toujours gratuites (Prière, Ablutions) fonctionnent aussi bien depuis
+`private-books/` que `public/assets/books/` — mais autant tout centraliser au même endroit.
+
+⚠️ Cette protection reste liée à `NEXT_PUBLIC_PREMIUM_ENFORCEMENT` : tant que cette variable
+n'est pas sur `"true"`, tous les livres restent accessibles à qui a un compte (aucun blocage
+supplémentaire), exactement comme avant.
+
+## Panneau d'administration (`/admin`)
+
+Visible uniquement pour le compte dont l'email correspond à `NEXT_PUBLIC_ADMIN_EMAIL` (déjà dans
+`.env.example`) — un lien "Administration" apparaît alors dans la barre latérale.
+
+Permet d'**ajouter, modifier ou supprimer des livres sans toucher au code** : titre, catégorie,
+nom du fichier PDF (à déposer dans `private-books/`), nombre de pages. Les 12 livres de base
+restent gérés dans `lib/data/library.ts` et n'apparaissent pas dans ce panneau — celui-ci gère
+uniquement les livres ajoutés en plus.
+
+Sécurité : la page se cache déjà côté interface pour qui n'est pas l'admin, mais la vraie
+protection vient des règles Firestore (`firestore.rules`) qui n'autorisent l'écriture sur
+`library_catalog` qu'à l'email admin — republie les règles après avoir synchronisé ce projet.
+
 ## Lancer le projet en local
 
 

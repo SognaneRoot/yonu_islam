@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ADHKAR_CATEGORIES } from "@/lib/data/adhkar";
 import { useAppData } from "@/lib/store";
+import { DhikrAudio } from "@/components/dhikr-audio";
 import { CheckCircle2, Circle, Repeat } from "lucide-react";
 
 export function AdhkarClient() {
@@ -47,6 +48,7 @@ export function AdhkarClient() {
                       <span className="flex items-center gap-1.5 text-xs text-sand-400">
                         <Repeat size={13} /> {dhikr.repetitions}×
                       </span>
+                      <DhikrAudio src={`/assets/audio/adhkar/${dhikr.id}.mp3`} />
                       <button
                         onClick={() => toggleAdhkar(dhikr.id)}
                         className="flex items-center gap-1.5 text-xs text-sand-400 transition-colors hover:text-emerald-300"

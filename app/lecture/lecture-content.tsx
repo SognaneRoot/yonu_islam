@@ -7,7 +7,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useSubscription } from "@/lib/subscription";
 import { isBookCategoryAlwaysFree } from "@/lib/daily-quiz";
 import Link from "next/link";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Loader2, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const PdfPageViewer = dynamic(
   () => import("@/components/pdf-page-viewer").then((m) => m.PdfPageViewer),
@@ -20,8 +21,22 @@ export function LectureContent() {
   const params = useSearchParams();
   const bookId = params.get("book");
   const { data, update, ready } = useAppData();
-  const { firebaseReady } = useAuth();
+  const { user, firebaseReady } = useAuth();
   const { hasPremium, loading: subLoading } = useSubscription();
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [tokenLoading, setTokenLoading] = useState(!!user);
+
+  useEffect(() => {
+    if (!user) {
+      setTokenLoading(false);
+      return;
+    }
+    setTokenLoading(true);
+    user
+      .getIdToken()
+      .then(setAuthToken)
+      .finally(() => setTokenLoading(false));
+  }, [user]);
 
   if (!ready) return null;
 
@@ -40,7 +55,13 @@ export function LectureContent() {
 
   const alwaysFree = isBookCategoryAlwaysFree(book.category);
 
-  if (!alwaysFree && ENFORCED && firebaseReady && subLoading) return null;
+  if (!alwaysFree && ENFORCED && firebaseReady && (subLoading || tokenLoading)) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-night-800">
+        <Loader2 size={22} className="animate-spin text-beige-100" />
+      </div>
+    );
+  }
 
   if (!alwaysFree && ENFORCED && firebaseReady && !hasPremium) {
     return (
@@ -73,7 +94,8 @@ export function LectureContent() {
 
   return (
     <PdfPageViewer
-      file={`/assets/books/${book.file}`}
+      file={`/api/books/${book.file}`}
+      authToken={authToken}
       title={book.title}
       page={page}
       totalPages={book.pages}

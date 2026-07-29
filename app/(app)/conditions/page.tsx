@@ -7,7 +7,7 @@ export default function ConditionsPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="font-display text-2xl text-beige-50">Conditions Générales d'Utilisation et de Vente</h1>
-        <p className="mt-1 text-sm text-sand-400">Dernière mise à jour : à compléter</p>
+        <p className="mt-1 text-sm text-sand-400">Dernière mise à jour : 28 juillet 2026</p>
       </div>
 
       <Card>
@@ -46,10 +46,10 @@ export default function ConditionsPage() {
             <h2 className="font-display text-base text-beige-50">4. Abonnement et paiement</h2>
             <ul className="list-disc space-y-1 pl-5">
               <li>L'abonnement (mensuel ou annuel) donne accès à l'ensemble des livres PDF et des quiz.</li>
-              <li>Les prix affichés sont indiqués en FCFA [ou devise à préciser] et peuvent évoluer ; tout changement de prix ne s'applique pas aux périodes déjà payées.</li>
+              <li>Les prix affichés sont indiqués en FCFA et peuvent évoluer ; tout changement de prix ne s'applique pas aux périodes déjà payées.</li>
               <li>Le paiement est traité par Stripe et/ou PayPal ; nous ne stockons jamais tes coordonnées bancaires.</li>
               <li>L'abonnement se renouvelle automatiquement à chaque période, sauf résiliation avant la date de renouvellement, directement depuis Stripe/PayPal ou en nous contactant.</li>
-              <li><strong>Politique de remboursement</strong> : [à définir — ex. remboursement possible sous X jours si le service n'a pas été utilisé, ou politique de non-remboursement passé un délai de rétractation légal].</li>
+              <li><strong>Politique de remboursement</strong> : un remboursement peut être demandé dans les 7 jours suivant la souscription si le contenu premium (livres, quiz) n'a pas été consulté. Passé ce délai, aucun remboursement n'est possible, mais tu peux résilier à tout moment pour arrêter le renouvellement suivant.</li>
             </ul>
           </section>
 
@@ -92,12 +92,18 @@ export default function ConditionsPage() {
 
           <section>
             <h2 className="font-display text-base text-beige-50">9. Droit applicable</h2>
-            <p>[À compléter — ex. droit sénégalais / droit français], juridiction compétente en cas de litige : [à préciser].</p>
+            <p>Droit sénégalais. Tout litige relève de la compétence des tribunaux du Sénégal.</p>
           </section>
 
           <section>
             <h2 className="font-display text-base text-beige-50">10. Contact</h2>
-            <p>Pour toute question : [email de contact à compléter].</p>
+            <p>
+              Pour toute question :{" "}
+              <a href="mailto:yonu.islam@gmail.com" className="text-gold-400 hover:underline">
+                yonu.islam@gmail.com
+              </a>{" "}
+              — +221 77 191 64 66.
+            </p>
           </section>
 
           <p className="border-t border-white/10 pt-4 text-xs text-sand-500">

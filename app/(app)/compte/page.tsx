@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useSubscription } from "@/lib/subscription";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { AlertTriangle, LogOut, Mail, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
+
+const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), { ssr: false });
 
 export default function ComptePage() {
   const { user, loading, firebaseReady, signIn, signUp, logout, resetPassword, resendVerificationEmail, deleteAccount } =
@@ -17,6 +20,8 @@ export default function ComptePage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -164,9 +169,28 @@ export default function ComptePage() {
       setError("Merci d'accepter les conditions d'utilisation pour créer un compte.");
       return;
     }
+    if (mode === "signup" && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !captchaToken) {
+      setError("Merci de compléter le reCAPTCHA.");
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "signup") {
+        if (captchaToken) {
+          const verifyRes = await fetch("/api/auth/verify-captcha", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: captchaToken }),
+          });
+          const verifyJson = await verifyRes.json();
+          if (!verifyJson.success) {
+            setError("Vérification reCAPTCHA échouée, réessaie.");
+            setCaptchaKey((k) => k + 1);
+            setCaptchaToken(null);
+            setBusy(false);
+            return;
+          }
+        }
         await signUp(email, password, name || undefined);
       } else {
         await signIn(email, password);
@@ -251,6 +275,14 @@ export default function ComptePage() {
               >
                 Mot de passe oublié ?
               </button>
+            )}
+            {mode === "signup" && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+              <ReCAPTCHA
+                key={captchaKey}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                onChange={(token) => setCaptchaToken(token)}
+                onExpired={() => setCaptchaToken(null)}
+              />
             )}
             {mode === "signup" && (
               <label className="flex items-start gap-2 text-xs text-sand-400">

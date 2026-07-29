@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { ShieldAlert } from "lucide-react";
 
 const NAV = [
   { href: "/", label: "Accueil", icon: Home },
@@ -47,6 +49,8 @@ const NAV = [
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isAdmin = !!user && user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
   return (
     <div className="flex h-full flex-col bg-night-800">
@@ -85,6 +89,21 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             </Link>
           );
         })}
+        {isAdmin && (
+          <Link
+            href="/admin"
+            onClick={onNavigate}
+            className={cn(
+              "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+              pathname === "/admin"
+                ? "bg-red-500/15 text-beige-50"
+                : "text-sand-400 hover:bg-white/5 hover:text-beige-100"
+            )}
+          >
+            <ShieldAlert size={17} className="text-red-400" />
+            <span className="truncate">Administration</span>
+          </Link>
+        )}
       </nav>
 
       <div className="mx-3 mb-5 rounded-xl border border-gold-500/20 bg-gold-500/5 p-3.5">
