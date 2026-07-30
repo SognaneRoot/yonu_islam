@@ -362,6 +362,18 @@ Sécurité : la page se cache déjà côté interface pour qui n'est pas l'admin
 protection vient des règles Firestore (`firestore.rules`) qui n'autorisent l'écriture sur
 `library_catalog` qu'à l'email admin — republie les règles après avoir synchronisé ce projet.
 
+## Surlignage PDF
+
+Sélectionne du texte dans le lecteur (`/lecture`) → un bouton **"Surligner"** apparaît → clique
+dessus pour l'enregistrer. Clique sur un surlignage existant pour le supprimer. Sauvegardé par
+livre et par utilisateur dans Firestore (collection `highlights`), positionné en pourcentage de
+la page — donc toujours bien placé quelle que soit la taille d'écran utilisée.
+
+⚠️ **Compromis assumé** : activer la sélection de texte (nécessaire pour surligner) permet aussi
+techniquement de copier du texte avec Ctrl+C. C'est un vrai compromis entre "fonctionnalité
+utile" et "protection maximale du contenu" — copier quelques lignes est très différent de
+télécharger le PDF entier, donc j'ai jugé que ça en valait la peine, mais c'est bon à savoir.
+
 ## Lancer le projet en local
 
 

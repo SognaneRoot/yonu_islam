@@ -3,7 +3,9 @@
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/TextLayer.css";
+import { HighlightablePage } from "./pdf-highlightable-page";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -15,6 +17,7 @@ export function PdfPageViewer({
   onPageChange,
   backHref = "/bibliotheque",
   authToken,
+  bookId,
 }: {
   file: string;
   title: string;
@@ -23,6 +26,7 @@ export function PdfPageViewer({
   onPageChange: (page: number) => void;
   backHref?: string;
   authToken?: string | null;
+  bookId: string;
 }) {
   const [numPages, setNumPages] = useState<number | null>(totalPages || null);
   const [width, setWidth] = useState(360);
@@ -70,6 +74,9 @@ export function PdfPageViewer({
             <ArrowLeft size={16} /> Retour
           </Link>
           <p className="min-w-0 truncate font-display text-sm text-beige-50">{title}</p>
+          <span className="hidden shrink-0 text-[11px] text-sand-500 sm:inline">
+            Sélectionne du texte pour le surligner
+          </span>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <span className="text-xs tabular-nums text-sand-300">
@@ -107,13 +114,7 @@ export function PdfPageViewer({
             </p>
           }
         >
-          <Page
-            pageNumber={page}
-            width={width}
-            renderAnnotationLayer={false}
-            renderTextLayer={false}
-            className="shadow-2xl"
-          />
+          <HighlightablePage bookId={bookId} pageNumber={page} width={width} />
         </Document>
 
         <button

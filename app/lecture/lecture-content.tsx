@@ -101,6 +101,7 @@ export function LectureContent() {
       totalPages={book.pages}
       onPageChange={handlePageChange}
       backHref="/bibliotheque"
+      bookId={book.id}
     />
   );
 }
