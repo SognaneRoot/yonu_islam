@@ -329,38 +329,29 @@ RECAPTCHA_SECRET_KEY=
 ```
 Sans ces variables, l'inscription fonctionne normalement, juste sans protection anti-bot.
 
-## Protection des PDF (accès contrôlé au lieu de fichiers publics)
+## Panneau d'administration (`/escanor`) — upload direct des PDF
 
-Les PDF ne sont plus servis directement depuis `public/assets/books/` — ils passent maintenant
-par une route serveur (`/api/books/[filename]`) qui vérifie l'identité et l'abonnement **avant**
-de renvoyer le fichier. Ça bloque l'accès direct par URL, contrairement à avant.
+L'ancienne méthode (déposer les PDF dans un dossier puis les committer sur Git) est
+**remplacée** par un envoi direct depuis l'interface, stocké sur **Firebase Storage** — plus
+aucun risque de perdre des fichiers lors d'une synchronisation de code.
 
-**Migration nécessaire** : déplace tous tes PDF de `public/assets/books/` vers un nouveau dossier
-`private-books/` (même noms de fichiers, juste un dossier différent, à la racine du projet) :
-```powershell
-cd E:\mon-chemin-vers-allah
-Move-Item public\assets\books\*.pdf private-books\
-```
-Les livres des catégories toujours gratuites (Prière, Ablutions) fonctionnent aussi bien depuis
-`private-books/` que `public/assets/books/` — mais autant tout centraliser au même endroit.
+**Pour y accéder** :
+1. Crée un compte normal sur `/compte` avec l'email exact `yonu.islam@gmail.com` (mot de passe
+   au choix — c'est un compte séparé de ta boîte Gmail, juste le même email)
+2. Une fois connecté, le lien **"Administration"** apparaît dans la barre latérale, menant à `/escanor`
 
-⚠️ Cette protection reste liée à `NEXT_PUBLIC_PREMIUM_ENFORCEMENT` : tant que cette variable
-n'est pas sur `"true"`, tous les livres restent accessibles à qui a un compte (aucun blocage
-supplémentaire), exactement comme avant.
+**Ce qu'on y trouve** :
+- La liste des 12 livres de base (titre/catégorie figés dans le code) avec un bouton **"Envoyer un PDF"** pour chacun
+- Un formulaire pour créer de nouveaux livres (titre, catégorie, nombre de pages), puis leur envoyer un PDF de la même façon
+- Les fichiers ne sont **jamais accessibles publiquement** : ils passent uniquement par la route
+  serveur `/api/books/[bookId]`, qui vérifie l'identité et l'abonnement avant de les servir
 
-## Panneau d'administration (`/admin`)
-
-Visible uniquement pour le compte dont l'email correspond à `NEXT_PUBLIC_ADMIN_EMAIL` (déjà dans
-`.env.example`) — un lien "Administration" apparaît alors dans la barre latérale.
-
-Permet d'**ajouter, modifier ou supprimer des livres sans toucher au code** : titre, catégorie,
-nom du fichier PDF (à déposer dans `private-books/`), nombre de pages. Les 12 livres de base
-restent gérés dans `lib/data/library.ts` et n'apparaissent pas dans ce panneau — celui-ci gère
-uniquement les livres ajoutés en plus.
-
-Sécurité : la page se cache déjà côté interface pour qui n'est pas l'admin, mais la vraie
-protection vient des règles Firestore (`firestore.rules`) qui n'autorisent l'écriture sur
-`library_catalog` qu'à l'email admin — republie les règles après avoir synchronisé ce projet.
+**Configuration requise (une fois)** :
+1. Assure-toi que `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` est bien renseignée (déjà dans `.env.example`)
+2. Publie les règles de sécurité Storage : Firebase Console → **Storage** → si ce n'est pas encore
+   activé, clique sur **Commencer** pour créer le bucket → onglet **Règles** → colle le contenu de
+   `storage.rules` (fourni dans le projet) → **Publier**
+3. Republie aussi `firestore.rules` (deux nouvelles collections : `library_catalog`, `book_files`)
 
 ## Surlignage PDF
 

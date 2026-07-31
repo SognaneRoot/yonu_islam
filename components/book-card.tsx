@@ -36,18 +36,12 @@ export function BookCard({ book }: { book: LibraryItem }) {
         <div className="flex items-center justify-between text-xs text-sand-400">
           <span>{book.progress}% lu</span>
         </div>
-        {book.file ? (
-          alwaysFree ? (
-            <PdfReader bookId={book.id} page={page} />
-          ) : (
-            <PremiumGate compact>
-              <PdfReader bookId={book.id} page={page} />
-            </PremiumGate>
-          )
+        {alwaysFree ? (
+          <PdfReader bookId={book.id} page={page} />
         ) : (
-          <p className="text-xs text-sand-500">
-            Aucun PDF trouvé — dépose-le dans <code className="text-gold-400">public/assets/books/</code>.
-          </p>
+          <PremiumGate compact>
+            <PdfReader bookId={book.id} page={page} />
+          </PremiumGate>
         )}
       </CardContent>
     </Card>

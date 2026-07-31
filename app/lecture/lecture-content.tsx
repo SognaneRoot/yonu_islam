@@ -42,7 +42,7 @@ export function LectureContent() {
 
   const book = data.library.find((b) => b.id === bookId);
 
-  if (!book || !book.file) {
+  if (!book) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3 bg-night-800 px-6 text-center">
         <p className="text-beige-100">Livre introuvable.</p>
@@ -94,7 +94,7 @@ export function LectureContent() {
 
   return (
     <PdfPageViewer
-      file={`/api/books/${book.file}`}
+      file={`/api/books/${book.id}`}
       authToken={authToken}
       title={book.title}
       page={page}

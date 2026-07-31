@@ -1,0 +1,12 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /books/{fileName} {
+      // Jamais de lecture directe depuis le navigateur — seul notre serveur (Admin SDK,
+      // qui contourne ces règles) peut lire les fichiers, après avoir vérifié
+      // l'authentification et l'abonnement dans /api/books/[bookId].
+      allow read: if false;
+      allow write: if request.auth != null && request.auth.token.email == "yonu.islam@gmail.com";
+    }
+  }
+}

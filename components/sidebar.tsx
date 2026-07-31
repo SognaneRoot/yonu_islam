@@ -91,11 +91,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         })}
         {isAdmin && (
           <Link
-            href="/admin"
+            href="/escanor"
             onClick={onNavigate}
             className={cn(
               "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-              pathname === "/admin"
+              pathname === "/escanor"
                 ? "bg-red-500/15 text-beige-50"
                 : "text-sand-400 hover:bg-white/5 hover:text-beige-100"
             )}
