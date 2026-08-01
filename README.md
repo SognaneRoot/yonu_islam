@@ -346,12 +346,22 @@ aucun risque de perdre des fichiers lors d'une synchronisation de code.
 - Les fichiers ne sont **jamais accessibles publiquement** : ils passent uniquement par la route
   serveur `/api/books/[bookId]`, qui vérifie l'identité et l'abonnement avant de les servir
 
-**Configuration requise (une fois)** :
-1. Assure-toi que `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` est bien renseignée (déjà dans `.env.example`)
-2. Publie les règles de sécurité Storage : Firebase Console → **Storage** → si ce n'est pas encore
-   activé, clique sur **Commencer** pour créer le bucket → onglet **Règles** → colle le contenu de
-   `storage.rules` (fourni dans le projet) → **Publier**
-3. Republie aussi `firestore.rules` (deux nouvelles collections : `library_catalog`, `book_files`)
+**Configuration requise (une fois)** — **Vercel Blob**, gratuit, **aucune carte bancaire requise** :
+1. Vercel → ton projet → onglet **Storage** (en haut) → **Create Database** → choisis **Blob**
+2. Donne-lui un nom, valide — Vercel ajoute automatiquement la variable `BLOB_READ_WRITE_TOKEN`
+   à ton projet (rien à copier-coller toi-même)
+3. Redéploie une fois (Deployments → `...` → Redeploy) pour que la variable soit prise en compte
+4. Republie aussi `firestore.rules` (nouvelles collections : `library_catalog`, `book_files`)
+
+⚠️ J'ai d'abord essayé Firebase Storage, mais Google impose maintenant le plan payant Blaze
+(carte bancaire) même pour les projets gratuits — Vercel Blob évite complètement ce problème,
+avec 1 Go de stockage gratuit inclus.
+
+**Sécurité** : Vercel Blob ne permet que des fichiers "publics" (pas de règle "jamais lisible
+directement" comme sur Firebase). Le contournement : l'URL réelle du fichier n'est **jamais**
+envoyée au navigateur des lecteurs — elle reste stockée côté serveur (Firestore) et notre route
+`/api/books/[bookId]` va la chercher elle-même avant de relayer les octets, après avoir vérifié
+l'abonnement. Seul toi, en tant qu'admin, vois brièvement l'URL réelle pendant l'envoi.
 
 ## Surlignage PDF
 

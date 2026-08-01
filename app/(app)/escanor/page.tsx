@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
-import { getFirebaseDb, getFirebaseStorage } from "@/lib/firebase/client";
+import { getFirebaseDb } from "@/lib/firebase/client";
 import { DEFAULT_LIBRARY } from "@/lib/data/library";
 import {
   collection,
@@ -14,7 +14,7 @@ import {
   query,
   setDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
+import { upload } from "@vercel/blob/client";
 import { CheckCircle2, Pencil, Plus, ShieldAlert, Trash2, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -66,7 +66,7 @@ export default function EscanorPage() {
     const unsubFiles = onSnapshot(collection(db, "book_files"), (snap) => {
       const status: FileStatus = {};
       snap.docs.forEach((d) => {
-        status[d.id] = !!d.data().storagePath;
+        status[d.id] = !!d.data().blobUrl;
       });
       setFileStatus(status);
     });
@@ -91,6 +91,10 @@ export default function EscanorPage() {
             correspondant à l'email admin configuré.
           </CardDescription>
         </CardHeader>
+        <CardContent className="space-y-1 text-xs text-sand-500">
+          <p>Connecté avec : {user?.email || "personne (déconnecté)"}</p>
+          <p>Email admin attendu : {ADMIN_EMAIL || "⚠️ NEXT_PUBLIC_ADMIN_EMAIL n'est pas configurée sur Vercel"}</p>
+        </CardContent>
       </Card>
     );
   }
@@ -101,17 +105,17 @@ export default function EscanorPage() {
       setError("Seuls les fichiers PDF sont acceptés.");
       return;
     }
-    const storage = getFirebaseStorage();
-    const db = getFirebaseDb();
-    if (!storage || !db) return;
+    if (!user) return;
     setUploadingId(bookId);
     try {
-      const storagePath = `books/${bookId}.pdf`;
-      await uploadBytes(ref(storage, storagePath), file, { contentType: "application/pdf" });
-      await setDoc(doc(db, "book_files", bookId), {
-        storagePath,
-        updatedAt: new Date().toISOString(),
+      const idToken = await user.getIdToken();
+      await upload(`books/${bookId}.pdf`, file, {
+        access: "public",
+        handleUploadUrl: "/api/blob-upload",
+        clientPayload: idToken,
       });
+      // La confirmation (écriture dans book_files) arrive via le webhook serveur
+      // onUploadCompleted — l'écoute Firestore ci-dessus mettra fileStatus à jour toute seule.
     } catch (err: any) {
       setError(`Échec de l'envoi : ${err?.message || "erreur inconnue"}`);
     } finally {

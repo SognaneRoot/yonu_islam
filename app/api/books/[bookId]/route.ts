@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
 import { getVerifiedUid } from "@/lib/verify-request";
-import { getAdminDb, getAdminStorage } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { DEFAULT_LIBRARY } from "@/lib/data/library";
 import { isBookCategoryAlwaysFree } from "@/lib/daily-quiz";
 
@@ -55,17 +55,17 @@ export async function GET(req: NextRequest, { params }: { params: { bookId: stri
     }
   }
 
-  // 3. Récupérer le fichier — priorité à Firebase Storage (envoyé depuis /escanor),
-  // avec repli sur un fichier local (ancienne méthode, pour compatibilité).
+  // 3. Récupérer le fichier — priorité à Vercel Blob (envoyé depuis /escanor). L'URL réelle
+  // n'est jamais transmise au navigateur : on la récupère côté serveur et on relaie les octets.
   try {
     if (db) {
       const fileDoc = await db.collection("book_files").doc(bookId).get();
-      const storagePath = fileDoc.data()?.storagePath;
-      if (storagePath) {
-        const storage = getAdminStorage();
-        if (storage) {
-          const [buffer] = await storage.bucket().file(storagePath).download();
-          return new NextResponse(new Uint8Array(buffer), {
+      const blobUrl = fileDoc.data()?.blobUrl;
+      if (blobUrl) {
+        const blobRes = await fetch(blobUrl);
+        if (blobRes.ok) {
+          const arrayBuffer = await blobRes.arrayBuffer();
+          return new NextResponse(new Uint8Array(arrayBuffer), {
             headers: {
               "Content-Type": "application/pdf",
               "Content-Disposition": "inline",
