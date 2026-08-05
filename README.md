@@ -363,6 +363,17 @@ envoyée au navigateur des lecteurs — elle reste stockée côté serveur (Fire
 `/api/books/[bookId]` va la chercher elle-même avant de relayer les octets, après avoir vérifié
 l'abonnement. Seul toi, en tant qu'admin, vois brièvement l'URL réelle pendant l'envoi.
 
+⚠️ **Limite actuelle : 4 Mo par fichier.** L'upload passe par notre propre serveur (au lieu
+d'un envoi direct navigateur→Blob) à cause d'un **bug actuel de l'infrastructure Vercel**
+(CORS manquant sur `vercel.com/api/blob`, confirmé par leur propre support, sans solution à ce
+jour — [voir le fil sur leur forum](https://community.vercel.com/t/vercel-blob-client-upload-blocked-by-cors-access-control-allow-origin-missing/46967)).
+Si Vercel corrige ce bug, on pourra repasser à l'envoi direct sans cette limite.
+
+**Pour un PDF de plus de 4 Mo** (ex. Bulugh Al-Maram, Kitab At-Tawhid) : dépose-le directement
+dans `private-books/` avec le nom de fichier attendu (tableau plus haut) et commit/push comme
+avant — la route `/api/books/[bookId]` sait lire depuis les deux sources (Blob ou fichier local),
+donc les deux méthodes fonctionnent en parallèle.
+
 ## Surlignage PDF
 
 Sélectionne du texte dans le lecteur (`/lecture`) → un bouton **"Surligner"** apparaît → clique

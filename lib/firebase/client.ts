@@ -1,7 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
-import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -20,7 +19,6 @@ export const isFirebaseConfigured = Boolean(
 let app: FirebaseApp | null = null;
 let authInstance: Auth | null = null;
 let dbInstance: Firestore | null = null;
-let storageInstance: FirebaseStorage | null = null;
 
 function ensureApp() {
   if (!isFirebaseConfigured) return null;
@@ -45,12 +43,4 @@ export function getFirebaseDb(): Firestore | null {
   if (!a) return null;
   if (!dbInstance) dbInstance = getFirestore(a);
   return dbInstance;
-}
-
-/** Renvoie l'instance Storage, ou `null` si Firebase n'est pas configuré. */
-export function getFirebaseStorage(): FirebaseStorage | null {
-  const a = ensureApp();
-  if (!a) return null;
-  if (!storageInstance) storageInstance = getStorage(a);
-  return storageInstance;
 }

@@ -1,7 +1,6 @@
 import { cert, getApps, initializeApp, App } from "firebase-admin/app";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 import { getAuth, Auth } from "firebase-admin/auth";
-import { getStorage, Storage } from "firebase-admin/storage";
 
 let adminApp: App | null = null;
 
@@ -13,12 +12,7 @@ function ensureAdminApp() {
   if (!json) return null;
   if (!adminApp) {
     const serviceAccount = JSON.parse(json);
-    adminApp = getApps().length
-      ? getApps()[0]
-      : initializeApp({
-          credential: cert(serviceAccount),
-          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-        });
+    adminApp = getApps().length ? getApps()[0] : initializeApp({ credential: cert(serviceAccount) });
   }
   return adminApp;
 }
@@ -33,10 +27,4 @@ export function getAdminAuth(): Auth | null {
   const app = ensureAdminApp();
   if (!app) return null;
   return getAuth(app);
-}
-
-export function getAdminStorage(): Storage | null {
-  const app = ensureAdminApp();
-  if (!app) return null;
-  return getStorage(app);
 }

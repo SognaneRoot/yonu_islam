@@ -14,7 +14,6 @@ import {
   query,
   setDoc,
 } from "firebase/firestore";
-import { upload } from "@vercel/blob/client";
 import { CheckCircle2, Pencil, Plus, ShieldAlert, Trash2, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -109,13 +108,19 @@ export default function EscanorPage() {
     setUploadingId(bookId);
     try {
       const idToken = await user.getIdToken();
-      await upload(`books/${bookId}.pdf`, file, {
-        access: "public",
-        handleUploadUrl: "/api/blob-upload",
-        clientPayload: idToken,
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("bookId", bookId);
+      const res = await fetch("/api/escanor-upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
+        body: formData,
       });
-      // La confirmation (écriture dans book_files) arrive via le webhook serveur
-      // onUploadCompleted — l'écoute Firestore ci-dessus mettra fileStatus à jour toute seule.
+      const json = await res.json();
+      if (!json.ok) {
+        setError(json.error || "Échec de l'envoi.");
+      }
+      // Succès : l'écoute Firestore sur book_files met fileStatus à jour automatiquement.
     } catch (err: any) {
       setError(`Échec de l'envoi : ${err?.message || "erreur inconnue"}`);
     } finally {
@@ -181,6 +186,11 @@ export default function EscanorPage() {
         <h1 className="font-display text-2xl text-beige-50">Administration — Bibliothèque</h1>
         <p className="mt-1 text-sm text-sand-400">
           Envoie directement les PDF ici — plus besoin de manipuler des fichiers via Git.
+        </p>
+        <p className="mt-1 text-xs text-gold-400">
+          ⚠️ Limité à 4 Mo par fichier pour l'instant (bug actuel de Vercel Blob sur l'envoi
+          direct). Pour un PDF plus gros, dépose-le dans <code>private-books/</code> via Git —
+          voir le README.
         </p>
       </div>
 
