@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
-import { getVerifiedUid } from "@/lib/verify-request";
+import { getVerifiedUser } from "@/lib/verify-request";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { DEFAULT_LIBRARY } from "@/lib/data/library";
 import { isBookCategoryAlwaysFree } from "@/lib/daily-quiz";
@@ -39,21 +39,24 @@ export async function GET(req: NextRequest, { params }: { params: { bookId: stri
 
   // 2. Vérifier l'accès (abonnement) si nécessaire
   if (!alwaysFree && ENFORCED) {
-    const uid = await getVerifiedUid(req);
-    if (!uid) {
-      return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+      const authUser = await getVerifiedUser(req);
+      if (!authUser) {
+        return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+      }
+      const isAdmin = authUser.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      if (!isAdmin) {
+        if (!db) {
+          return NextResponse.json({ error: "Configuration serveur manquante." }, { status: 500 });
+        }
+        const subSnap = await db.collection("subscriptions").doc(authUser.uid).get();
+        const sub = subSnap.data();
+        const active =
+          sub?.status === "active" && (!sub.expiresAt || new Date(sub.expiresAt).getTime() > Date.now());
+        if (!active) {
+          return NextResponse.json({ error: "Abonnement requis pour lire ce livre." }, { status: 403 });
+        }
+      }
     }
-    if (!db) {
-      return NextResponse.json({ error: "Configuration serveur manquante." }, { status: 500 });
-    }
-    const subSnap = await db.collection("subscriptions").doc(uid).get();
-    const sub = subSnap.data();
-    const active =
-      sub?.status === "active" && (!sub.expiresAt || new Date(sub.expiresAt).getTime() > Date.now());
-    if (!active) {
-      return NextResponse.json({ error: "Abonnement requis pour lire ce livre." }, { status: 403 });
-    }
-  }
 
   // 3. Récupérer le fichier — priorité à Vercel Blob (envoyé depuis /escanor). L'URL réelle
   // n'est jamais transmise au navigateur : on la récupère côté serveur et on relaie les octets.

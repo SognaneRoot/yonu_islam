@@ -66,9 +66,11 @@ export function useSubscription() {
     return () => unsub();
   }, [user?.uid]);
 
+  const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const hasPremium =
-    subscription.status === "active" &&
-    (!subscription.expiresAt || new Date(subscription.expiresAt).getTime() > Date.now());
+    isAdmin ||
+    (subscription.status === "active" &&
+      (!subscription.expiresAt || new Date(subscription.expiresAt).getTime() > Date.now()));
 
   return { subscription, hasPremium, loading };
 }
