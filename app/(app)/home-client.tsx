@@ -72,37 +72,6 @@ export function HomeClient() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Today's tasks */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Tâches du jour</CardTitle>
-              <CardDescription>Coche ce que tu as accompli aujourd'hui</CardDescription>
-            </div>
-            <Link href="/habitudes" className="text-xs text-gold-400 hover:underline">
-              Tout voir
-            </Link>
-          </CardHeader>
-          <CardContent className="grid gap-2 sm:grid-cols-2">
-            {DEFAULT_HABITS.map((h) => {
-              const done = !!todayLog[h.id];
-              return (
-                <button
-                  key={h.id}
-                  onClick={() => toggleHabit(h.id)}
-                  className="flex items-center gap-2.5 rounded-xl border border-white/8 bg-night-700/50 px-3.5 py-2.5 text-left text-sm transition-colors hover:border-emerald-500/40"
-                >
-                  {done ? (
-                    <CheckCircle2 size={18} className="shrink-0 text-emerald-400" />
-                  ) : (
-                    <Circle size={18} className="shrink-0 text-sand-500" />
-                  )}
-                  <span className={done ? "text-sand-400 line-through" : "text-beige-100"}>{h.label}</span>
-                </button>
-              );
-            })}
-          </CardContent>
-        </Card>
 
         {/* Weekly goal */}
         <Card>

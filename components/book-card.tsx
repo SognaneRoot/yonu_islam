@@ -1,49 +1,33 @@
 "use client";
 
-import { Card, CardContent } from "./ui/card";
-import { Progress } from "./ui/progress";
-import { PdfReader } from "./pdf-reader";
-import { PremiumGate } from "./premium-gate";
-import { useAppData } from "@/lib/store";
-import { isBookCategoryAlwaysFree } from "@/lib/daily-quiz";
-import { Heart } from "lucide-react";
-import { LibraryItem } from "@/lib/data/library";
+import Image from "next/image";
+import { useState } from "react";
+import { BookOpen } from "lucide-react";
 
-export function BookCard({ book }: { book: LibraryItem }) {
-  const { data, toggleFavorite } = useAppData();
-  const favorite = book.favorite || data.favorites.includes(book.id);
-  const pageKey = `page:${book.id}`;
-  const storedPage = data.notes[pageKey] ? parseInt(data.notes[pageKey], 10) : null;
-  const page = storedPage || Math.max(1, Math.round((book.progress / 100) * (book.pages || 1)) || 1);
-  const alwaysFree = isBookCategoryAlwaysFree(book.category);
+const GRADIENTS = ["from-emerald-700 to-emerald-900", "from-night-500 to-night-800", "from-gold-600 to-emerald-800", "from-emerald-800 to-night-800"];
+
+function gradientFor(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
+}
+
+export function BookCover({ id, title }: { id: string; title: string }) {
+  const [errored, setErrored] = useState(false);
+  const src = `/assets/covers/${id}.jpg`;
+
+  if (errored) {
+    return (
+      <div className={`relative flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gradient-to-br ${gradientFor(id)} p-3 text-center`}>
+        <BookOpen size={22} className="text-gold-300/70" />
+        <p className="font-display text-xs leading-snug text-beige-50/90 line-clamp-4">{title}</p>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate font-display text-base text-beige-50">{book.title}</p>
-            <p className="text-xs text-sand-400">
-              {book.category}
-              {book.pages ? ` · ${book.pages} pages` : ""}
-            </p>
-          </div>
-          <button onClick={() => toggleFavorite(book.id)} aria-label="favori">
-            <Heart size={16} className={favorite ? "fill-gold-500 text-gold-500" : "text-sand-500"} />
-          </button>
-        </div>
-        <Progress value={book.progress} />
-        <div className="flex items-center justify-between text-xs text-sand-400">
-          <span>{book.progress}% lu</span>
-        </div>
-        {alwaysFree ? (
-          <PdfReader bookId={book.id} page={page} />
-        ) : (
-          <PremiumGate compact>
-            <PdfReader bookId={book.id} page={page} />
-          </PremiumGate>
-        )}
-      </CardContent>
-    </Card>
+    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border border-white/8 bg-night-700/40">
+      <Image src={src} alt={title} fill sizes="200px" quality={70} loading="lazy" onError={() => setErrored(true)} className="object-cover" />
+    </div>
   );
 }
