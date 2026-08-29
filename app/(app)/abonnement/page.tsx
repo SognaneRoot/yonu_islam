@@ -78,6 +78,22 @@ export default function AbonnementPage() {
     }
   }
 
+  async function startPaydunyaCheckout() {
+    setError(null);
+    const idToken = await user!.getIdToken();
+    const res = await fetch("/api/paydunya/create-invoice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ plan: selectedPlan }),
+    });
+    const json = await res.json();
+    if (json.url) window.location.href = json.url;
+    else setError(json.error || "Impossible de démarrer le paiement.");
+  }
+  <Button onClick={startPaydunyaCheckout} variant="secondary" className="w-full">
+  Payer par Wave / Orange Money
+  </Button> 
+
   return (
     <div className="space-y-6">
       <div>
