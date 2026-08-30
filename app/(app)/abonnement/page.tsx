@@ -90,9 +90,6 @@ export default function AbonnementPage() {
     if (json.url) window.location.href = json.url;
     else setError(json.error || "Impossible de démarrer le paiement.");
   }
-  <Button onClick={startPaydunyaCheckout} variant="secondary" className="w-full">
-  Payer par Wave / Orange Money
-  </Button> 
 
   return (
     <div className="space-y-6">
@@ -146,7 +143,7 @@ export default function AbonnementPage() {
 
           {error && <p className="text-sm text-red-300">{error}</p>}
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -198,6 +195,17 @@ export default function AbonnementPage() {
                     PayPal n'est pas encore configuré (variables d'environnement manquantes).
                   </p>
                 )}
+              </CardContent>
+            </Card>
+                        <Card>
+              <CardHeader>
+                <CardTitle>Wave / Orange Money</CardTitle>
+                <CardDescription>Paiement mobile via PayDunya</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={startPaydunyaCheckout} variant="secondary" className="w-full">
+                  Payer par Wave / Orange Money
+                </Button>
               </CardContent>
             </Card>
           </div>
