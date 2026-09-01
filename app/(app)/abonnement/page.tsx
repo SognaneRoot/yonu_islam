@@ -90,6 +90,18 @@ export default function AbonnementPage() {
     if (json.url) window.location.href = json.url;
     else setError(json.error || "Impossible de démarrer le paiement.");
   }
+  async function startPaytechCheckout() {
+    setError(null);
+    const idToken = await user!.getIdToken();
+    const res = await fetch("/api/paytech/create-invoice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ plan: selectedPlan }),
+    });
+    const json = await res.json();
+    if (json.url) window.location.href = json.url;
+    else setError(json.error || "Impossible de démarrer le paiement.");
+  }
 
   return (
     <div className="space-y-6">
@@ -197,13 +209,13 @@ export default function AbonnementPage() {
                 )}
               </CardContent>
             </Card>
-                        <Card>
+            <Card>
               <CardHeader>
                 <CardTitle>Wave / Orange Money</CardTitle>
-                <CardDescription>Paiement mobile via PayDunya</CardDescription>
+                <CardDescription>Paiement mobile via PayTech</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button onClick={startPaydunyaCheckout} variant="secondary" className="w-full">
+                <Button onClick={startPaytechCheckout} variant="secondary" className="w-full">
                   Payer par Wave / Orange Money
                 </Button>
               </CardContent>
