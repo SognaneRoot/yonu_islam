@@ -15,6 +15,7 @@ import { useAppData } from "@/lib/store";
 import { cn, normalizeKey } from "@/lib/utils";
 import { CheckCircle2, Circle, Heart, Star } from "lucide-react";
 import { useState } from "react";
+import { ArabicAlphabetGrid } from "@/components/arabic-alphabet-grid";
 
 export function CategoryTemplate({ category, steps }: { category: CourseCategory; steps?: Step[] }) {
   const { data, toggleFavorite, setNote, setQuizScore } = useAppData();
@@ -98,11 +99,13 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
                 </button>
                 {open && (
                   <CardContent className="space-y-3 pt-0">
-                    {section.content.map((p, i) => (
-                      <p key={i} className="text-sm leading-relaxed text-beige-100/90">
-                        {p}
-                      </p>
-                    ))}
+                    {section.content[0] === "custom:arabic-alphabet" ? (
+                      <ArabicAlphabetGrid />
+                    ) : (
+                      section.content.map((p, i) => (
+                        <p key={i} className="text-sm leading-relaxed text-beige-100/90">{p}</p>
+                      ))
+                    )}
                     <Button
                       size="sm"
                       variant={isRead ? "outline" : "primary"}

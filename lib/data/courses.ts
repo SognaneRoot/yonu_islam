@@ -456,7 +456,7 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     color: "emerald",
     libraryCategory: "Arabe",
     sections: [
-      { id: "alphabet", title: "Alphabet", content: ["Les 28 lettres de l'alphabet arabe, leurs formes isolée, initiale, médiane et finale."] },
+      { id: "alphabet", title: "Alphabet", content: ["custom:arabic-alphabet"] },
       { id: "lecture", title: "Lecture", content: ["Assemblage des lettres, voyelles courtes (harakat) et longues, règles de base du tajwid."] },
       { id: "vocabulaire", title: "Vocabulaire coranique", content: ["Les racines et mots les plus fréquents du Coran, appris par groupes thématiques."] },
       { id: "grammaire", title: "Grammaire", content: ["Notions de base : nom, verbe, particule, déclinaison (i'rab) et conjugaison simple."] },
