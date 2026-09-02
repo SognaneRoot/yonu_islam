@@ -77,26 +77,13 @@ export default function AbonnementPage() {
       setStripeLoading(false);
     }
   }
-
-  async function startPaydunyaCheckout() {
-    setError(null);
-    const idToken = await user!.getIdToken();
-    const res = await fetch("/api/paydunya/create-invoice", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
-      body: JSON.stringify({ plan: selectedPlan }),
-    });
-    const json = await res.json();
-    if (json.url) window.location.href = json.url;
-    else setError(json.error || "Impossible de démarrer le paiement.");
-  }
-  async function startPaytechCheckout() {
+  async function startPaytechCheckout(method: "Wave" | "Orange Money") {
     setError(null);
     const idToken = await user!.getIdToken();
     const res = await fetch("/api/paytech/create-invoice", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
-      body: JSON.stringify({ plan: selectedPlan }),
+      body: JSON.stringify({ plan: selectedPlan, method }),
     });
     const json = await res.json();
     if (json.url) window.location.href = json.url;
@@ -211,12 +198,15 @@ export default function AbonnementPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Wave / Orange Money</CardTitle>
-                <CardDescription>Paiement mobile via PayTech</CardDescription>
+                <CardTitle>Mobile Money</CardTitle>
+                <CardDescription>Paiement direct via PayTech</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button onClick={startPaytechCheckout} variant="secondary" className="w-full">
-                  Payer par Wave / Orange Money
+              <CardContent className="space-y-2">
+                <Button onClick={() => startPaytechCheckout("Wave")} variant="secondary" className="w-full">
+                  Payer par Wave
+                </Button>
+                <Button onClick={() => startPaytechCheckout("Orange Money")} variant="secondary" className="w-full">
+                  Payer par Orange Money
                 </Button>
               </CardContent>
             </Card>

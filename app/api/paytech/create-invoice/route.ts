@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const uid = await getVerifiedUid(req);
     if (!uid) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
 
-    const { plan } = (await req.json()) as { plan: PlanId };
+    const { plan, method } = (await req.json()) as { plan: PlanId; method: "Wave" | "Orange Money" };
     const planInfo = PLANS.find((p) => p.id === plan);
     if (!planInfo) return NextResponse.json({ error: "Plan invalide." }, { status: 400 });
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         ref_command: refCommand,
         command_name: `Abonnement Mon Chemin vers Allah — ${planInfo.label}`,
         env: process.env.PAYTECH_ENV === "prod" ? "prod" : "test",
-        target_payment: "Orange Money, Wave",
+        target_payment: method || "Wave",
         ipn_url: `${origin}/api/paytech/ipn`,
         success_url: `${origin}/abonnement?checkout=success`,
         cancel_url: `${origin}/abonnement?checkout=cancelled`,
