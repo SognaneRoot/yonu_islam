@@ -16,7 +16,6 @@ import { cn, normalizeKey } from "@/lib/utils";
 import { CheckCircle2, Circle, Heart, Star } from "lucide-react";
 import { useState } from "react";
 import { ArabicAlphabetGrid } from "@/components/arabic-alphabet-grid";
-import { ArabicAlphabetGrid } from "@/components/arabic-alphabet-grid";
 import { ArabicSyllablesGrid } from "@/components/arabic-syllables-grid";
 import { ArabicWordGrid } from "@/components/arabic-word-grid";
 import { QURANIC_VOCABULARY } from "@/lib/data/arabic-vocabulary";
