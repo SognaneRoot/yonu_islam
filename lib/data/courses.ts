@@ -457,9 +457,9 @@ export const COURSE_CATEGORIES: Record<string, CourseCategory> = {
     libraryCategory: "Arabe",
     sections: [
       { id: "alphabet", title: "Alphabet", content: ["custom:arabic-alphabet"] },
-      { id: "lecture", title: "Lecture", content: ["Assemblage des lettres, voyelles courtes (harakat) et longues, règles de base du tajwid."] },
-      { id: "vocabulaire", title: "Vocabulaire coranique", content: ["Les racines et mots les plus fréquents du Coran, appris par groupes thématiques."] },
-      { id: "grammaire", title: "Grammaire", content: ["Notions de base : nom, verbe, particule, déclinaison (i'rab) et conjugaison simple."] },
+      { id: "lecture", title: "Lecture", content: ["custom:arabic-syllables"] },
+      { id: "vocabulaire", title: "Vocabulaire coranique", content: ["custom:arabic-vocabulary"] },
+      { id: "grammaire", title: "Grammaire", content: ["custom:arabic-grammar"] },
     ],
     quiz: [
       {

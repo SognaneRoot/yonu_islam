@@ -16,6 +16,11 @@ import { cn, normalizeKey } from "@/lib/utils";
 import { CheckCircle2, Circle, Heart, Star } from "lucide-react";
 import { useState } from "react";
 import { ArabicAlphabetGrid } from "@/components/arabic-alphabet-grid";
+import { ArabicAlphabetGrid } from "@/components/arabic-alphabet-grid";
+import { ArabicSyllablesGrid } from "@/components/arabic-syllables-grid";
+import { ArabicWordGrid } from "@/components/arabic-word-grid";
+import { QURANIC_VOCABULARY } from "@/lib/data/arabic-vocabulary";
+import { ARABIC_GRAMMAR_TERMS } from "@/lib/data/arabic-grammar";
 
 export function CategoryTemplate({ category, steps }: { category: CourseCategory; steps?: Step[] }) {
   const { data, toggleFavorite, setNote, setQuizScore } = useAppData();
@@ -101,6 +106,12 @@ export function CategoryTemplate({ category, steps }: { category: CourseCategory
                   <CardContent className="space-y-3 pt-0">
                     {section.content[0] === "custom:arabic-alphabet" ? (
                       <ArabicAlphabetGrid />
+                    ) : section.content[0] === "custom:arabic-syllables" ? (
+                      <ArabicSyllablesGrid />
+                    ) : section.content[0] === "custom:arabic-vocabulary" ? (
+                      <ArabicWordGrid words={QURANIC_VOCABULARY} />
+                    ) : section.content[0] === "custom:arabic-grammar" ? (
+                      <ArabicWordGrid words={ARABIC_GRAMMAR_TERMS} />
                     ) : (
                       section.content.map((p, i) => (
                         <p key={i} className="text-sm leading-relaxed text-beige-100/90">{p}</p>
