@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedUid } from "@/lib/verify-request";
 import { isPaytechConfigured, getPaytechHeaders } from "@/lib/paytech";
-import { PLANS, PlanId } from "@/lib/subscription";
+import { PLANS, PlanId } from "@/lib/plans";
 
 export async function POST(req: NextRequest) {
   try {

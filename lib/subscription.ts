@@ -5,14 +5,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./auth-context";
 import { getFirebaseDb } from "./firebase/client";
 
-export type PlanId = "monthly" | "annual";
-
-// ⚠️ Prix d'exemple — à ajuster selon ta tarification réelle (doivent correspondre
-// aux prix configurés côté Stripe/PayPal).
-export const PLANS: { id: PlanId; label: string; priceFcfa: number; period: string }[] = [
-  { id: "monthly", label: "Mensuel", priceFcfa: 1500, period: "/ mois" },
-  { id: "annual", label: "Annuel", priceFcfa: 14000, period: "/ an" },
-];
+import { PlanId } from "./plans";
+export { PLANS, type PlanId } from "./plans";
 
 export type SubscriptionStatus = "none" | "active" | "expired";
 export type SubscriptionProvider = "paypal" | "stripe" | null;

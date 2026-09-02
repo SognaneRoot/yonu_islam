@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb, getAdminAuth } from "@/lib/firebase/admin";
 import { verifyPaytechHmac, verifyPaytechSha256, decodeCustomField } from "@/lib/paytech";
 import { sendConfirmationEmail, subscriptionConfirmationEmail } from "@/lib/email";
-import { PLANS, PlanId } from "@/lib/subscription";
+import { PLANS, PlanId } from "@/lib/plans";
 
 export async function POST(req: NextRequest) {
   try {
