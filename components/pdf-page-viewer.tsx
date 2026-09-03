@@ -1,9 +1,11 @@
 "use client";
 
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, X, ZoomIn, ZoomOut } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Document, pdfjs } from "react-pdf";
+// The package does not ship TypeScript declarations for this side-effect CSS import.
+// @ts-ignore
 import "react-pdf/dist/Page/TextLayer.css";
 import { HighlightablePage } from "./pdf-highlightable-page";
 
@@ -29,16 +31,25 @@ export function PdfPageViewer({
   bookId: string;
 }) {
   const [numPages, setNumPages] = useState<number | null>(totalPages || null);
-  const [width, setWidth] = useState(360);
+  const [baseWidth, setBaseWidth] = useState(360);
+  const [zoom, setZoom] = useState(1);
+  const width = baseWidth * zoom;
 
   useEffect(() => {
     function update() {
-      setWidth(Math.min(window.innerWidth - 32, 820));
+      setBaseWidth(Math.min(window.innerWidth - 32, 820));
     }
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+
+  function zoomIn() {
+    setZoom((z) => Math.min(2.5, +(z + 0.2).toFixed(2)));
+  }
+  function zoomOut() {
+    setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)));
+  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -79,14 +90,17 @@ export function PdfPageViewer({
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <span className="text-xs tabular-nums text-sand-300">
-            {page} / {numPages ?? totalPages ?? "?"}
-          </span>
-          <button
-            onClick={handleClose}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-beige-100 hover:bg-white/10"
-            aria-label="Fermer l'onglet"
-          >
+          <div className="flex items-center gap-1 rounded-lg border border-white/10 px-1 py-0.5">
+            <button onClick={zoomOut} disabled={zoom <= 0.5} className="rounded p-1 text-beige-100 hover:bg-white/10 disabled:opacity-30" aria-label="Dézoomer">
+              <ZoomOut size={15} />
+            </button>
+            <span className="w-10 text-center text-xs tabular-nums text-sand-300">{Math.round(zoom * 100)}%</span>
+            <button onClick={zoomIn} disabled={zoom >= 2.5} className="rounded p-1 text-beige-100 hover:bg-white/10 disabled:opacity-30" aria-label="Zoomer">
+              <ZoomIn size={15} />
+            </button>
+          </div>
+          <span className="text-xs tabular-nums text-sand-300">{page} / {numPages ?? totalPages ?? "?"}</span>
+          <button onClick={handleClose} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-beige-100 hover:bg-white/10" aria-label="Fermer l'onglet">
             <X size={16} /> Fermer
           </button>
         </div>
